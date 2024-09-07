@@ -1,0 +1,17 @@
+.custom-dropdown .ant-select-item {
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.custom-dropdown .ant-select-item:hover {
+    background-color: #f0f0f0;
+}
+
+.custom-dropdown .ant-select-item-option-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+}
