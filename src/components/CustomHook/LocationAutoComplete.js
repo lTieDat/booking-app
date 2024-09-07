@@ -10,11 +10,13 @@ const LocationAutocomplete = ({ searchText, onResults }) => {
         method: "GET",
       };
 
+      const apiKey = process.env.REACT_APP_GOOGLE_API;
+
       try {
         const response = await fetch(
           `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
             searchText
-          )}&apiKey=6efd91fd8d144be8893d5d9300df7630`,
+          )}&apiKey=${apiKey}`,
           requestOptions
         );
         if (!response.ok) {
