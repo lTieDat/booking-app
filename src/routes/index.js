@@ -4,6 +4,8 @@ import Home from "../pages/home";
 import Login from "../pages/login";
 import Register from "../pages/register";
 import SearchResult from "../pages/searchresults";
+import HotelDetail from "../pages/hotelDetail";
+
 export const routes = [
   {
     path: "/",
@@ -16,6 +18,10 @@ export const routes = [
       {
         path: "searchresult",
         element: <SearchResult />,
+      },
+      {
+        path: "hotelDetail/:id",
+        element: <HotelDetail />,
       },
     ],
   },
