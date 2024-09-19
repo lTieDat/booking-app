@@ -9,12 +9,14 @@ function Header() {
 
   const isHomePage = pathname === "/";
   const isSearchPage = pathname === "/searchresult";
+  const isCheckoutPage = pathname.includes("/checkout");
 
-  const getTextColor = () => (isHomePage || isSearchPage ? "white" : "black");
+  const getTextColor = () =>
+    (isHomePage, isCheckoutPage) || isSearchPage ? "white" : "black";
 
   const headerStyles = {
     color: getTextColor(),
-    backgroundColor: isSearchPage ? "#2F80ED" : "",
+    backgroundColor: (isSearchPage, isCheckoutPage) ? "#2F80ED" : "",
   };
 
   const handleLogout = () => {

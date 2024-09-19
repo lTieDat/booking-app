@@ -1,35 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { getBooking } from "../../service/bookingService";
-import { getRoom } from "../../service/hotelService";
+import { getRoom, getHotel } from "../../service/hotelService";
+import { getPrefixes } from "../../service/userService";
 import { CheckOutlined } from "@ant-design/icons";
+import { Steps, Input } from "antd";
 import { getCountriesList } from "../../service/userService";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import { faChildren } from "@fortawesome/free-solid-svg-icons";
 import "./style.scss";
 
-async function getCountries() {
-  const responseCountries = await getCountriesList();
-  console.log("responseCountries", responseCountries);
-  const countries = responseCountries.map((country) => country.name.common);
-  return countries;
-}
-
-console.log("getCountries", getCountries());
-
 const Checkout = () => {
   const bookingId = window.location.pathname.split("/").pop();
   const [booking, setBooking] = useState(null);
   const [rooms, setRooms] = useState([]);
-  const [countries, setCountries] = useState([]);
+  const [hotel, setHotel] = useState(null);
+  const [prefixes, setPrefixes] = useState([]);
 
   useEffect(() => {
-    const fetchCountries = async () => {
-      const countryList = await getCountries();
-      setCountries(countryList);
+    const fetchPrefixes = async () => {
+      const fetchedPrefixes = await getPrefixes();
+      setPrefixes(fetchedPrefixes.data);
     };
-
-    fetchCountries();
+    fetchPrefixes();
 
     const fetchBookingData = async () => {
       const fetchedBooking = await getBooking(bookingId);
@@ -45,6 +38,10 @@ const Checkout = () => {
         );
         setRooms(roomDetails);
       }
+
+      // Fetch hotel details
+      const hotelDetails = await getHotel(fetchedBooking.hotelId);
+      setHotel(hotelDetails);
     };
 
     fetchBookingData();
@@ -54,6 +51,16 @@ const Checkout = () => {
     // Booking logic here
     console.log("Booking completed!");
   };
+
+  const selectBefore = (
+    <select defaultValue="84">
+      {prefixes.map((prefix) => (
+        <option key={prefix.code + 1} value={prefix.dial_code}>
+          {prefix.name} {prefix.dial_code}
+        </option>
+      ))}
+    </select>
+  );
 
   const renderRoomDetails = () => {
     return rooms.map((room) => (
@@ -108,26 +115,78 @@ const Checkout = () => {
             <div className="checkout__guest-Country">
               <label>Country/region </label>
               <select>
-                {countries.map((country, index) => (
-                  <option key={index}>{country}</option>
-                ))}
+                {
+                  // Fetch countries list here
+                  prefixes.map((prefix) => (
+                    <option key={prefix.code} value={prefix.name}>
+                      {prefix.name}
+                    </option>
+                  ))
+                }
               </select>
             </div>
+            {/* dial_code */}
+            <div className="checkout__guest-dial">
+              <label>Phone No </label>
+              <div className="checkout__guest-dial-inp">
+                {selectBefore}
+                <input type="text" placeholder="" required />
+              </div>
+            </div>
+            {/* end dial_code */}
           </div>
         </div>
       </div>
     );
   };
 
-  return (
-    <section className="checkout">
-      <h1>Secure your reservation</h1>
-      <div className="main-display">
-        <div className="checkout__guest">{checkoutInformation()}</div>
-        <div className="checkout__room">{renderRoomDetails()}</div>
+  const hotelDetails = () => {
+    return (
+      <div className="checkout__hotel-Details">
+        <div className="checkout__hotel-img">
+          <img src={hotel?.images.imgSource} alt="hotel" />
+        </div>
+        <div className="checkout__hotel-body">
+          <div className="checkout__hotel-Name">{hotel?.HotelName}</div>
+          <div className="checkout__hotel-Address">
+            {hotel?.Address.StreetAddress}
+          </div>
+          <div className="checkout__hotel-rating">{hotel?.Rating}</div>
+        </div>
       </div>
-      <button onClick={handleBooking}>Complete Booking</button>
-    </section>
+    );
+  };
+
+  return (
+    <>
+      <div className="progress">
+        <Steps
+          size="small"
+          current={1}
+          items={[
+            {
+              title: "Choose Room",
+            },
+            {
+              title: "Fill Information",
+            },
+            {
+              title: "Final",
+            },
+          ]}
+        />
+      </div>
+      <section className="checkout">
+        <div className="sider-display">
+          <div className="checkout__hotel">{hotelDetails()}</div>
+        </div>
+        <div className="main-display">
+          <div className="checkout__guest">{checkoutInformation()}</div>
+          <div className="checkout__room">{renderRoomDetails()}</div>
+          <button onClick={handleBooking}>Complete Booking</button>
+        </div>
+      </section>
+    </>
   );
 };
 

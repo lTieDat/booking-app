@@ -86,10 +86,19 @@ export const getCountriesList = async () => {
     const response = await fetch(
       "https://restcountries.com/v3.1/all?fields=name"
     );
-    console.log("response in userSer", response);
     return response.json();
   } catch (error) {
     console.error("Get countries error:", error);
+    throw error;
+  }
+};
+
+export const getPrefixes = async () => {
+  try {
+    const response = await get("/users/prefix");
+    return response.data;
+  } catch (error) {
+    console.error("Get prefixes error:", error);
     throw error;
   }
 };
