@@ -74,7 +74,7 @@ function Search() {
 
       return;
     }
-    const link = `/searchresult?&city=${location.city}&country=${location.country}&startDate=${startDate}&endDate=${endDate}&adults=${guestInfo.adults}&children=${guestInfo.children}&rooms=${guestInfo.rooms}&lat=${location.geometry.lat}&lng=${location.geometry.lng}`;
+    const link = `/searchresult?city=${location.city}&country=${location.country}&startDate=${startDate}&endDate=${endDate}&adults=${guestInfo.adults}&children=${guestInfo.children}&rooms=${guestInfo.rooms}&lat=${location.geometry.lat}&lng=${location.geometry.lng}`;
     window.location.href = link;
   };
 

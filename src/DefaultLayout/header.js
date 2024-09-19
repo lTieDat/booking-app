@@ -5,7 +5,7 @@ import Logo from "../components/Logo";
 function Header() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const accessToken = Cookies.get("accessToken");
+  const accessToken = Cookies.get("token");
 
   const isHomePage = pathname === "/";
   const isSearchPage = pathname === "/searchresult";
@@ -18,8 +18,8 @@ function Header() {
   };
 
   const handleLogout = () => {
-    Cookies.remove("accessToken");
-    navigate("/login");
+    Cookies.remove("token");
+    navigate("/");
   };
 
   return (

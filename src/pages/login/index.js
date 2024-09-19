@@ -23,6 +23,7 @@ function Login() {
     const response = await login(email, password, rememberMe);
     if (response) {
       navigate("/");
+      console.log("Login successful");
     }
   };
 

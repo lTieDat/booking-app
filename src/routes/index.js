@@ -5,6 +5,9 @@ import Login from "../pages/login";
 import Register from "../pages/register";
 import SearchResult from "../pages/searchresults";
 import HotelDetail from "../pages/hotelDetail";
+import Checkout from "../pages/checkout";
+import Verify from "../pages/verify";
+import ForgotPassword from "../pages/forgot-password";
 
 export const routes = [
   {
@@ -23,7 +26,15 @@ export const routes = [
         path: "hotelDetail/:id",
         element: <HotelDetail />,
       },
+      {
+        path: "checkout/:id",
+        element: <Checkout />,
+      },
     ],
+  },
+  {
+    path: "forgot-password",
+    element: <ForgotPassword />,
   },
   {
     path: "login",
@@ -32,6 +43,10 @@ export const routes = [
   {
     path: "register",
     element: <Register />,
+  },
+  {
+    path: "verify",
+    element: <Verify />,
   },
 ];
 

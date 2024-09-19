@@ -24,24 +24,27 @@ export const refreshAccessToken = async () => {
 
 //login function
 export const login = async (email, password, rememberMe) => {
-  console.log("email in handle:", email);
-  console.log("password in handle:", password);
-  console.log("rememberMe in handle:", rememberMe);
-  // check ok
-  // try {
-  //   const response = await post("/auth/login", {
-  //     username: email,
-  //     password: password,
-  //   });
-  //   const { accessToken, refreshToken } = response;
-  //   // Save tokens to cookies
-  //   Cookies.set("accessToken", accessToken, { expires: 1 / 1440 }); // 1 minute
-  //   Cookies.set("refreshToken", refreshToken, { expires: 1 }); // 1 day
-  //   return response;
-  // } catch (error) {
-  //   console.error("Login error:", error);
-  //   throw error;
-  // }
+  try {
+    const response = await post("/users/login", {
+      email: email,
+      password: password,
+      rememberMe: rememberMe,
+    });
+    console.log("response", response);
+    const token = response.data.token;
+    // Save tokens to cookies
+    if (rememberMe) {
+      // Set expiration to 1 month for rememberMe true
+      Cookies.set("token", token, { expires: 30 }); // 30 days = 1 month
+    } else {
+      // Set token to expire when the session ends
+      Cookies.set("token", token, { expires: 1 }); // 1 day
+    }
+    return response;
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
 };
 
 export const logout = async () => {
@@ -49,23 +52,44 @@ export const logout = async () => {
   return response;
 };
 
-export const fetchPosts = async (titleFilter, page) => {
-  const response = await get(`/posts?title=${titleFilter}&page=${page}`);
-  console.log(response.data);
-  return response;
+export const register = async (email, password, fullname) => {
+  try {
+    const response = await post("/users/register", {
+      email: email,
+      password: password,
+      fullName: fullname,
+    });
+    console.log("response", response);
+    return response;
+  } catch (error) {
+    console.error("Register error:", error);
+    throw error;
+  }
 };
 
-export const deletePost = async (postId) => {
-  const response = await remove(`/posts/${postId}`);
-  return response.ok;
+export const verifyEmail = async (email, code) => {
+  try {
+    const response = await post("/users/verify", {
+      otp: code,
+      email: email,
+    });
+    console.log("response in utils:", response);
+    return response;
+  } catch (error) {
+    console.error("Verify error:", error);
+    throw error;
+  }
 };
 
-export const addPost = async (post) => {
-  const response = await post("/posts", post);
-  return response;
-};
-
-export const fetchPostTags = async () => {
-  const response = await get("/posts/tags");
-  return response;
+export const getCountriesList = async () => {
+  try {
+    const response = await fetch(
+      "https://restcountries.com/v3.1/all?fields=name"
+    );
+    console.log("response in userSer", response);
+    return response.json();
+  } catch (error) {
+    console.error("Get countries error:", error);
+    throw error;
+  }
 };

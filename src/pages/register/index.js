@@ -4,17 +4,34 @@ import "../../components/CustomCss/login.scss";
 import { login } from "../../service/userService";
 import Logo from "../../components/Logo";
 import ShowPassword from "../../components/ShowPassword";
+import { register } from "../../service/userService";
 
 function Register() {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
+    // console.log("email in submit:", email);
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
     event.preventDefault();
-    console.log("email in submit:", email);
+    try {
+      const response = await register(email, password, fullName);
+      console.log("response", response);
+      alert(
+        "Registration successful. Please check your email to verify your account."
+      );
+      navigate(`/verify?email=${email}`);
+    } catch (error) {
+      console.error("Register error:", error);
+      alert("An error occurred. Please try again.");
+    }
   };
 
   return (
@@ -38,6 +55,20 @@ function Register() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+            {/* Full name */}
+            <label className="login__label" htmlFor="fullname">
+              Full name
+            </label>
+            <input
+              className="login__input"
+              type="text"
+              id="fullname"
+              value={fullName}
+              placeholder="Enter full name"
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+            {/* end fullname */}
             {/* Create password */}
             <label className="login__label" htmlFor="password">
               Create password

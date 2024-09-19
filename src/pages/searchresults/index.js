@@ -158,7 +158,9 @@ const SearchResult = () => {
   };
 
   const handleHotelDetail = (hotelId) => () => {
-    Navigate(`/hotelDetail/${hotelId}`);
+    Navigate(
+      `/hotelDetail/${hotelId}?startDate=${booking.startDate}&endDate=${booking.endDate}&adults=${booking.adults}&children=${booking.children}&rooms=${booking.rooms}`
+    );
   };
 
   return (
