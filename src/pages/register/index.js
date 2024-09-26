@@ -5,6 +5,7 @@ import { login } from "../../service/userService";
 import Logo from "../../components/Logo";
 import ShowPassword from "../../components/ShowPassword";
 import { register } from "../../service/userService";
+import { notification } from "antd";
 
 function Register() {
   const [fullName, setFullName] = useState("");
@@ -15,22 +16,30 @@ function Register() {
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
-    // console.log("email in submit:", email);
     if (password !== confirmPassword) {
-      alert("Passwords do not match");
+      notification.error({
+        message: "Passwords do not match",
+        description: "Please make sure the passwords match.",
+      });
       return;
     }
     event.preventDefault();
     try {
       const response = await register(email, password, fullName);
       console.log("response", response);
-      alert(
-        "Registration successful. Please check your email to verify your account."
-      );
+      notification.success({
+        message: "Registration successful",
+        description:
+          "Please check your email to verify your account and complete the registration process.",
+      });
       navigate(`/verify?email=${email}`);
     } catch (error) {
       console.error("Register error:", error);
-      alert("An error occurred. Please try again.");
+      notification.error({
+        message: "Registration failed",
+        description:
+          "An error occurred while registering your account. Please try again later.",
+      });
     }
   };
 

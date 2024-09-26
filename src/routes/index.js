@@ -7,6 +7,9 @@ import SearchResult from "../pages/searchresults";
 import HotelDetail from "../pages/hotelDetail";
 import Checkout from "../pages/checkout";
 import Verify from "../pages/verify";
+import FinalStep from "../pages/final/index";
+import ProfilePage from "../pages/profile";
+import BookingHistory from "../pages/bookingHistory";
 import ForgotPassword from "../pages/forgot-password";
 
 export const routes = [
@@ -29,6 +32,18 @@ export const routes = [
       {
         path: "checkout/:id",
         element: <Checkout />,
+      },
+      {
+        path: "booking/:bookingId/final",
+        element: <FinalStep />,
+      },
+      {
+        path: "profile",
+        element: <ProfilePage />,
+      },
+      {
+        path: "bookings-trips",
+        element: <BookingHistory />,
       },
     ],
   },

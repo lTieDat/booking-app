@@ -93,7 +93,6 @@ const SearchResult = () => {
 
   const handleRatingChange = (value) => {
     setRating(value);
-    console.log(value);
   };
 
   const handleSearch = useCallback(async () => {

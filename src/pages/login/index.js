@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "../../components/CustomCss/login.scss";
 import { login } from "../../service/userService";
 import Cookies from "js-cookie";
+import { notification } from "antd";
 import Logo from "../../components/Logo";
 import { Checkbox } from "antd";
 
@@ -18,12 +19,28 @@ function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("email in submit:", email);
-    console.log("password in submit:", password);
     const response = await login(email, password, rememberMe);
-    if (response) {
+    if (response.status === 200) {
+      console.log("response", response);
+      if (rememberMe) {
+        // Set expiration to 1 month for rememberMe true
+        Cookies.set("token", response.token, { expires: 30 }); // 30 days = 1 month
+      } else {
+        // Set token to expire when the session ends
+        Cookies.set("token", response.token, { expires: 1 }); // 1 day
+      }
       navigate("/");
-      console.log("Login successful");
+    } else if (response.status === 400) {
+      notification.error({
+        message: "Invalid email or password",
+        description: "Please check your email and password and try again",
+      });
+    } else {
+      notification.error({
+        message: "Login failed",
+        description:
+          "An error occurred while logging in. Please try again later.",
+      });
     }
   };
 

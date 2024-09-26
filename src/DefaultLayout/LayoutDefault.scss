@@ -53,7 +53,6 @@ a {
         margin: 0;
 
         a {
-          color: var(--red);
           padding: 10px;
           display: block;
           font-family: var(--fontMulish);
@@ -160,3 +159,71 @@ a {
     }
   }
 }
+
+//dropdown logo
+/* Shared CSS class for all nav links */
+.nav-link {
+  color: inherit;
+  text-decoration: none;
+  padding: 10px;
+  display: block;
+}
+
+.nav-link:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  /* Hover effect for all links */
+}
+
+/* User dropdown styles */
+.user-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.user-button {
+  background-color: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  /* Hover effect for the button */
+}
+
+.user-dropdown-menu {
+  display: none;
+  position: absolute;
+  background-color: transparent;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  min-width: 200px;
+}
+
+.user-dropdown:hover .user-dropdown-menu {
+  display: block;
+}
+
+/* Additional styles for layout if needed */
+.layout__header-nav-list {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+  padding: 0;
+  margin: 0;
+}
+
+.layout__header-nav-item {
+  position: relative;
+}
+
+.layout__header-nav-btn {
+  margin-left: auto;
+}
+
+
+// end of dropdown logo

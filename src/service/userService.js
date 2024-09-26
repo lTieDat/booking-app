@@ -30,16 +30,6 @@ export const login = async (email, password, rememberMe) => {
       password: password,
       rememberMe: rememberMe,
     });
-    console.log("response", response);
-    const token = response.data.token;
-    // Save tokens to cookies
-    if (rememberMe) {
-      // Set expiration to 1 month for rememberMe true
-      Cookies.set("token", token, { expires: 30 }); // 30 days = 1 month
-    } else {
-      // Set token to expire when the session ends
-      Cookies.set("token", token, { expires: 1 }); // 1 day
-    }
     return response;
   } catch (error) {
     console.error("Login error:", error);
@@ -99,6 +89,26 @@ export const getPrefixes = async () => {
     return response.data;
   } catch (error) {
     console.error("Get prefixes error:", error);
+    throw error;
+  }
+};
+
+export const getUserByToken = async (token) => {
+  try {
+    const response = await get(`/users/me?tokenID=${token}`);
+    return response.data;
+  } catch (error) {
+    console.error("Get user by token error:", error);
+    throw error;
+  }
+};
+
+export const updateProfile = async (token, data) => {
+  try {
+    const response = await post(`/users/updateUser?tokenID=${token}`, data);
+    return response;
+  } catch (error) {
+    console.error("Update profile error:", error);
     throw error;
   }
 };

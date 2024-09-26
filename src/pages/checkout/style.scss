@@ -10,7 +10,11 @@ button {
     align-items: center;
     cursor: pointer;
     justify-content: center;
+    border: none;
+    margin: 10px auto;
+    max-width: 200px;
 }
+
 
 // progress
 .progress {
@@ -36,6 +40,15 @@ button {
     margin: 10px auto;
     max-width: 1200px;
     display: flex;
+
+    //btn
+    &__btn {
+        margin-right: auto;
+        margin-left: auto;
+        max-width: 200px;
+    }
+
+    //end btn
 
     // guest info
     &__guest {
@@ -215,4 +228,140 @@ button {
     }
 
     // end hotel
+
+    // booking
+    &__booking {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 20px 0;
+        border-radius: 5px;
+
+        &-time {
+            display: flex;
+            margin: 10px 0;
+        }
+
+        & label {
+            font-size: 16px;
+            font-weight: 700;
+
+        }
+
+        &-Checkin {
+            margin: 5px;
+        }
+
+        &-Checkout {
+            margin: 5px;
+        }
+
+        &-Checkin::after {
+            content: '';
+            position: absolute;
+            width: 1px; // Width of the dividing line
+            height: 40%; // Adjust height as needed
+            background-color: #ccc;
+            left: 50%; // Center line between the two sections
+            transform: translateX(-50%); // Centering correction
+            top: 40%;
+        }
+
+        &-title {
+            padding: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        &-Details {
+            position: relative;
+        }
+
+    }
+
+
+    // end booking
 }
+
+// price 
+.checkout__price-summary-container {
+    border: 1px solid #ccc;
+    padding: 20px;
+    max-width: 400px;
+    font-family: Arial, sans-serif;
+}
+
+.checkout__price-summary h3,
+.checkout__price-summary h4 {
+    margin-bottom: 15px;
+}
+
+.checkout__price-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.checkout__original-price,
+.checkout__deal-discount {
+    font-weight: bold;
+}
+
+.checkout__discount-notice {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.checkout__total-price {
+    background-color: #f9f9f9;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.checkout__total-text {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.checkout__final-price {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.checkout__strikethrough {
+    text-decoration: line-through;
+    color: red;
+    margin-right: 10px;
+}
+
+.checkout__includes-notice {
+    font-size: 12px;
+    color: #666;
+}
+
+.checkout__price-information {
+    margin-top: 20px;
+}
+
+.checkout__price-information p {
+    margin-bottom: 5px;
+}
+
+.checkout__vat {
+    display: flex;
+    justify-content: space-between;
+}
+
+.checkout__toggle-details {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    padding: 5px;
+}
+
+// end price

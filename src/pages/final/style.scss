@@ -1,0 +1,43 @@
+.final {
+    max-width: 1200px;
+    margin: 50px auto;
+}
+
+.booking-page {
+    margin: 50px;
+    height: 50vh;
+}
+
+.booking-content {
+    background-color: white;
+    padding: 40px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.booking-header {
+    margin-bottom: 20px;
+}
+
+.booking-body {
+    font-size: 16px;
+    color: #333;
+}
+
+.booking-footer {
+    margin-top: 20px;
+}
+
+.btn-done {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-done:hover {
+    background-color: #0056b3;
+}
