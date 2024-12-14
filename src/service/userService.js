@@ -22,17 +22,30 @@ export const refreshAccessToken = async () => {
 };
 //end refresh token function
 
-//login function
-export const login = async (email, password, rememberMe) => {
+//login for user function
+export const loginUser = async (email, password) => {
   try {
     const response = await post("/users/login", {
       email: email,
       password: password,
-      rememberMe: rememberMe,
     });
     return response;
   } catch (error) {
     console.error("Login error:", error);
+    throw error;
+  }
+};
+
+//login for manager function
+export const loginManager = async (email, password) => {
+  try {
+    const response = await post("/admin/login", {
+      email: email,
+      password: password,
+    });
+    return response;
+  } catch (error) {
+    console.error("Login manager error:", error);
     throw error;
   }
 };
@@ -99,6 +112,16 @@ export const getUserByToken = async (token) => {
     return response.data;
   } catch (error) {
     console.error("Get user by token error:", error);
+    throw error;
+  }
+};
+
+export const getManagerByToken = async (token) => {
+  try {
+    const response = await get(`/users/admin/me?tokenID=${token}`);
+    return response.data;
+  } catch (error) {
+    console.error("Get manager by token error:", error);
     throw error;
   }
 };

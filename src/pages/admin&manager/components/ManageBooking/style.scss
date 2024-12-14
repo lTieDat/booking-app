@@ -1,0 +1,232 @@
+.container {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.booking-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    
+}
+
+.booking-table th,
+.booking-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.booking-table th {
+    background-color: #f4f4f4;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.booking-table td {
+    font-size: 14px;
+    color: #333;
+}
+
+/* Status badge styles */
+.status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status.confirmed {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.status.pending {
+    background-color: #FFC107;
+    color: white;
+}
+
+.status.cancelled {
+    background-color: #F44336;
+    color: white;
+}
+
+.status.paid {
+    background-color: #2196F3;
+    color: white;
+}
+
+/* Buttons */
+.buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.button {
+    padding: 5px 10px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.button.confirm {
+    background-color: #4caf50;
+    color: white;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: #45a049;
+    }
+}
+
+.button.delete {
+    background-color: #f44336;
+    color: white;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: #e53935;
+    }
+}
+
+/* Pagination styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination-button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    background-color: #f4f4f4;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: #ddd;
+    }
+
+    &.active {
+        background-color: #4285f4;
+        color: white;
+        border-color: #4285f4;
+    }
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 768px) {
+
+    .booking-table,
+    .booking-table th,
+    .booking-table td {
+        font-size: 12px;
+    }
+
+    .pagination-button {
+        padding: 4px 8px;
+    }
+
+    .button {
+        padding: 4px 8px;
+    }
+}
+
+.filter-search-sort {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    .filter,
+    .searchName,
+    .sort {
+        display: flex;
+        align-items: center;
+        margin-right: 20px;
+
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        select,
+        input {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 200px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease;
+
+            &:focus {
+                border-color: #4285f4;
+                outline: none;
+            }
+        }
+
+        select {
+            background-image: url('data:image/svg+xml;base64,...');
+            /* Add icon for select dropdown */
+            background-position: right 10px center;
+            background-repeat: no-repeat;
+            appearance: none;
+            /* Hides default arrow */
+        }
+    }
+
+    .searchName {
+        position: relative;
+
+        input {
+            padding-left: 40px;
+            /* Room for the search icon */
+        }
+
+        &::before {
+            content: '\f002';
+            /* Example icon (FontAwesome search icon) */
+            font-family: FontAwesome;
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #888;
+        }
+    }
+
+    .sort {
+        select {
+            padding-right: 40px;
+            background-image: url('data:image/svg+xml;base64,...');
+            /* Arrow icon for sorting */
+            background-position: right 10px center;
+            background-repeat: no-repeat;
+            appearance: none;
+        }
+    }
+}

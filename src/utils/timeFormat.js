@@ -31,4 +31,19 @@ function getDateDifference(startDate, endDate) {
   return diffInDays;
 }
 
-export { formatDateTime, getDateDifference };
+function formatDateTimeExceptHour(dateString) {
+  const date = new Date(dateString);
+
+  // Format the date using Intl.DateTimeFormat
+  const options = {
+    weekday: "long", // Display the day of the week
+    year: "numeric", // Display the year
+    month: "long", // Display the full month name
+    day: "numeric", // Display the day of the month
+  };
+
+  // Convert the date to the desired format
+  return new Intl.DateTimeFormat("en-US", options).format(date);
+}
+
+export { formatDateTime, getDateDifference, formatDateTimeExceptHour };

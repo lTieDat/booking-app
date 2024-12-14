@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { DatePicker, notification, Input, Rate } from "antd";
-import LocationSearch from "../../components/LocationOptions";
-import RoomPicker from "../../components/RoomPicker";
+import SideTab from "./components/SideTab";
 import { checkInputBooking } from "../../utils/validation";
 import extractLocationDetails from "../../utils/addressFormat";
 import { get } from "../../utils/index";
 import moment from "moment";
+import LocationSearchBar from "./components/LocationSearchBar";
 import shortenParagraph from "../../utils/shortenParagraph";
 import { StarTwoTone } from "@ant-design/icons";
 import { getTwoToneColor, setTwoToneColor } from "@ant-design/icons";
@@ -166,130 +166,27 @@ const SearchResult = () => {
     <>
       <div className="search-result__header">
         {contextHolder}
-        <div className="search-result__bar">
-          <div className="search-result__bar-item">
-            <LocationSearch setLocation={setLocation} location={location} />
-          </div>
-          <div className="search-result__bar-item">
-            <RoomPicker guestInfo={booking} setGuestInfo={setBooking} />
-          </div>
-          <div className="search-result__bar-item">
-            <RangePicker
-              showTime
-              format="YYYY-MM-DD HH:mm:ss"
-              onChange={handleDateChange}
-              defaultValue={
-                booking.startDate && booking.endDate
-                  ? [moment(booking.startDate), moment(booking.endDate)]
-                  : null
-              }
-            />
-          </div>
-          <div className="search-result__bar-item search-result__bar-item--submit">
-            <button
-              className="search-result__submit-btn"
-              onClick={handleSearch}
-            >
-              Search
-            </button>
-          </div>
-        </div>
+        <LocationSearchBar
+          location={location}
+          setBooking={setBooking}
+          booking={booking}
+          setLocation={setLocation}
+          handleDateChange={handleDateChange}
+          handleSearch={handleSearch}
+        />
       </div>
       {/* side tab */}
       <div className="search-result__content">
-        <div className="search-result__sidetab">
-          {/* Property name search */}
-          <div className="search-result__sidetab-item">
-            <div className="search-result__sidetab-header">
-              <h3 className="search-result__sidetab-title">
-                Search by properties name
-              </h3>
-              <Input
-                className="search-result__input"
-                placeholder="Search by hotel name"
-                value={propertyName}
-                onChange={(e) => setPropertyName(e.target.value)}
-                onKeyUp={handleKeyPress}
-              />
-            </div>
-          </div>
-          {/* Room services */}
-          <div className="search-result__sidetab-item">
-            <div className="search-result__sidetab-header">
-              <h3 className="search-result__sidetab-title">Room services</h3>
-            </div>
-            <div className="search-result__sidetab-body">
-              <div className="search-result__checkbox-group">
-                {items.map((item) => (
-                  <div key={item} className="search-result__checkbox-item">
-                    <input
-                      type="checkbox"
-                      id={item}
-                      checked={selectedItems.includes(item)}
-                      onChange={() => handleCheckboxChange(item)}
-                    />
-                    <label htmlFor={item}>{item}</label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          {/* Budget per day */}
-          <div className="search-result__sidetab-item">
-            <div className="search-result__sidetab-header">
-              <h3 className="search-result__sidetab-title">
-                Your budget per day
-              </h3>
-            </div>
-            <div className="search-result__sidetab-body">
-              <div className="search-result__checkbox-group">
-                {[
-                  { label: "0-200$", range: [0, 200] },
-                  { label: "200$-500$", range: [200, 500] },
-                  { label: "500$-1000$", range: [500, 1000] },
-                ].map(({ label, range }) => (
-                  <div key={label} className="search-result__checkbox-item">
-                    <input
-                      type="checkbox"
-                      id={label}
-                      checked={rangeValue.some(
-                        (item) => item[0] === range[0] && item[1] === range[1]
-                      )}
-                      onChange={() => handleCheckboxChange(range)}
-                    />
-                    <label htmlFor={label}>{label}</label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          {/* end budget per day */}
-          {/* filter by rating star */}
-          <div className="search-result__sidetab-item">
-            <div className="search-result__sidetab-header">
-              <h3 className="search-result__sidetab-title">Rating star</h3>
-            </div>
-            <div className="search-result__sidetab-body">
-              <div className="search-result__checkbox-groupStar">
-                {[5, 4, 3, 2, 1].map((rating) => (
-                  <div
-                    key={rating}
-                    className="search-result__checkbox-itemStar"
-                    onClick={() => handleRatingChange(rating)}
-                  >
-                    <label>
-                      <p>
-                        {rating} <StarTwoTone />
-                      </p>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* end filter by rating star */}
-        </div>
+        <SideTab
+          propertyName={propertyName}
+          setPropertyName={setPropertyName}
+          handleKeyPress={handleKeyPress}
+          items={items}
+          selectedItems={selectedItems}
+          handleCheckboxChange={handleCheckboxChange}
+          rangeValue={rangeValue}
+          handleRatingChange={handleRatingChange}
+        />
         {/* main content */}
         <div className="search-result__main">
           <div className="search-result__main-display">

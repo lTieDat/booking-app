@@ -1,0 +1,73 @@
+.dashboard {
+    padding: 20px;
+
+    &-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #111827;
+        margin: 20px;
+    }
+
+    &-bookingStat,
+    &-selectProperties {
+        transition: opacity 0.3s ease; // Optional: adds a smooth transition
+
+        &.disabled {
+            opacity: 0.5; // Makes the sections look disabled
+            pointer-events: none; // Disables all pointer events (clicks)
+        }
+    }
+
+    .dashboard-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        transition: all 0.3s ease;
+        width: 100%;
+
+        &:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-section {
+            width: 50%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+
+            .stat-item {
+                width: 45%;
+                margin-bottom: 15px;
+
+                h6 {
+                    font-size: 16px;
+                    font-weight: 500;
+                    color: #6b7280; // Light gray for label
+                }
+
+                h4 {
+                    font-size: 36px;
+                    font-weight: 600;
+                    color: #111827; // Darker color for numbers
+                }
+
+                p {
+                    font-size: 14px;
+                    color: #9ca3af; // Muted color for the description text
+                }
+
+                &:not(:nth-child(2n)) {
+                    border-right: 1px solid #e5e7eb; // Divider line between items in the row
+                }
+            }
+        }
+
+        .graph-section {
+            width: 50%;
+        }
+    }
+}

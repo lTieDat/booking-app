@@ -1,54 +1,76 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "../../components/CustomCss/login.scss";
-import { login } from "../../service/userService";
-import Cookies from "js-cookie";
-import { notification } from "antd";
-import Logo from "../../components/Logo";
-import { Checkbox } from "antd";
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import '../../components/CustomCss/login.scss'
+import { loginUser, loginManager } from '../../service/userService' // Import separate functions
+import Cookies from 'js-cookie'
+import { notification } from 'antd'
+import Logo from '../../components/Logo'
+import LogoManager from '../../components/Logo/LogoManager'
+import { Checkbox } from 'antd'
 
 function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
+  const navigate = useNavigate()
+  const pathName = window.location.pathname
+  const isManagerLogin = pathName.includes('loginManager')
 
   const handleRememberMe = (e) => {
-    setRememberMe(e.target.checked);
-  };
+    setRememberMe(e.target.checked)
+  }
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
-    const response = await login(email, password, rememberMe);
-    if (response.status === 200) {
-      console.log("response", response);
-      if (rememberMe) {
-        // Set expiration to 1 month for rememberMe true
-        Cookies.set("token", response.token, { expires: 30 }); // 30 days = 1 month
+    event.preventDefault()
+
+    try {
+      let response
+      // Call the respective login service based on the login type
+      if (isManagerLogin) {
+        response = await loginManager(email, password)
       } else {
-        // Set token to expire when the session ends
-        Cookies.set("token", response.token, { expires: 1 }); // 1 day
+        response = await loginUser(email, password)
       }
-      navigate("/");
-    } else if (response.status === 400) {
+
+      if (response.status === 200) {
+        const { token } = response
+        // Set token in cookies with different keys based on login type
+        const tokenKey = isManagerLogin ? 'managerToken' : 'token'
+        const expiresInDays = rememberMe ? 30 : 1
+
+        Cookies.set(tokenKey, token, { expires: expiresInDays })
+
+        // Redirect to respective dashboard based on role or login type
+        if (isManagerLogin) {
+          //store to local storage
+          localStorage.setItem('manager', JSON.stringify(response.data))
+          navigate('/admin/managePage') // Redirect manager
+        } else {
+          localStorage.setItem('user', JSON.stringify(response.data))
+          navigate('/') // Redirect normal user
+        }
+      } else if (response.status === 400) {
+        notification.error({
+          message: 'Invalid email or password',
+          description: 'Please check your email and password and try again',
+        })
+      } else {
+        notification.error({
+          message: 'Login failed',
+          description: 'An error occurred while logging in. Please try again later.',
+        })
+      }
+    } catch (error) {
       notification.error({
-        message: "Invalid email or password",
-        description: "Please check your email and password and try again",
-      });
-    } else {
-      notification.error({
-        message: "Login failed",
-        description:
-          "An error occurred while logging in. Please try again later.",
-      });
+        message: 'Login Error',
+        description: 'An unexpected error occurred. Please try again later.',
+      })
     }
-  };
+  }
 
   return (
     <>
-      <div className="login__logo">
-        <Logo />
-      </div>
+      <div className="login__logo">{isManagerLogin ? <LogoManager /> : <Logo />}</div>
       <div className="login">
         <h2 className="login__title">Sign In</h2>
         <form className="login__form" onSubmit={handleSubmit}>
@@ -85,15 +107,22 @@ function Login() {
             </a>
           </div>
           <button className="login__button" type="submit">
-            Sign In
+            {isManagerLogin ? 'Sign In as a hotel manager' : 'Sign In'}
           </button>
-          <p className="login__signup-text">
-            Don't have an account? <a href="/register">Sign up</a>
-          </p>
+          {!isManagerLogin && (
+            <>
+              <p className="login__signup-text">
+                Don't have an account? <a href="/register">Sign up</a>
+              </p>
+              <p className="login__signup-text">
+                <a href="/loginManager">Sign in as a hotel manager</a>
+              </p>
+            </>
+          )}
         </form>
       </div>
     </>
-  );
+  )
 }
 
-export default Login;
+export default Login

@@ -17,7 +17,7 @@ const checkTokenExpiration = async () => {
 
 export const get = async (path) => {
   try {
-    await checkTokenExpiration();
+    // await checkTokenExpiration();
     const response = await fetch(API_DOMAIN + path, {
       method: "GET",
       headers: {
@@ -38,6 +38,8 @@ export const get = async (path) => {
 
 export const post = async (path, body) => {
   try {
+    console.log("path", path);
+    console.log("body", body);
     const response = await fetch(API_DOMAIN + path, {
       method: "POST",
       headers: {

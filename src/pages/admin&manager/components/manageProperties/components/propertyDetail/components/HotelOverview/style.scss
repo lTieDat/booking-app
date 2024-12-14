@@ -1,0 +1,72 @@
+.hotel-detail__overview {
+    display: flex;
+    justify-content: center;
+    width: 60%;
+}
+
+.hotel-detail__image-area {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.hotel-detail__header {
+    display: flex;
+    max-width: 1500px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+    background-color: #ecebeb;
+    border-radius: 15px;
+
+}
+
+.hotel-detail__information {
+    flex: 3;
+}
+
+.hotel-detail__information h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.hotel-detail__rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.hotel-detail__rating p {
+    font-size: 16px;
+    color: #666;
+}
+
+.hotel-detail__location {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.hotel-detail__desc,
+.hotel-detail__facilities {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.hotel-detail__desc::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: black;
+}
+
+.hotel-detail__facilities h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
