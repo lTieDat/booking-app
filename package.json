@@ -45,6 +45,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "test-unit": "jest",
     "test": "jest --coverage",
     "eject": "react-scripts eject"
   },
