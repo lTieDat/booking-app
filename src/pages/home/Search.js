@@ -1,38 +1,38 @@
-import React, { useState } from "react";
-import { DatePicker, notification } from "antd";
-import RoomPicker from "../../components/RoomPicker";
-import LocationSearch from "../../components/LocationOptions";
-import { post } from "../../utils/index";
-import { checkInputBooking } from "../../utils/validation";
-import extractLocationDetails from "../../utils/addressFormat";
+import React, { useState } from 'react'
+import { DatePicker, notification } from 'antd'
+import RoomPicker from '../../components/RoomPicker'
+import LocationSearch from '../../components/LocationOptions'
+import { post } from '../../utils/index'
+import { checkInputBooking } from '../../utils/validation'
+import extractLocationDetails from '../../utils/addressFormat'
 
 function Search() {
-  const { RangePicker } = DatePicker;
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const { RangePicker } = DatePicker
+  const [startDate, setStartDate] = useState(null)
+  const [endDate, setEndDate] = useState(null)
   const [location, setLocation] = useState({
-    address: "",
+    address: '',
     geometry: {
       lat: null,
       lng: null,
     },
-    city: "",
-    country: "",
-    district: "",
-  });
+    city: '',
+    country: '',
+    district: '',
+  })
   const [guestInfo, setGuestInfo] = useState({
     adults: 0,
     children: 0,
     rooms: 0,
-  });
+  })
 
-  const [api, contextHolder] = notification.useNotification();
+  const [api, contextHolder] = notification.useNotification()
 
   const handleDateChange = (date, dateString) => {
-    const [start, end] = dateString;
-    setStartDate(start);
-    setEndDate(end);
-  };
+    const [start, end] = dateString
+    setStartDate(start)
+    setEndDate(end)
+  }
 
   const handleSearch = async () => {
     const requestBody = {
@@ -54,29 +54,29 @@ function Search() {
         children: guestInfo.children,
         rooms: guestInfo.rooms,
       },
-    };
-    const formattedLocation = extractLocationDetails(requestBody.location);
-    requestBody.location = formattedLocation;
-    const errors = checkInputBooking(requestBody);
-    if (Object.keys(errors).length > 0) {
-      // Trigger a notification if there are errors
-      api.error({
-        message: "Input Validation Error",
-        description:
-          `${errors.location ? errors.location + "! \n" : ""}` +
-          `${errors.date ? errors.date + "! \n" : ""}` +
-          `${errors.adults ? errors.adults + "! \n" : ""}` +
-          `${errors.rooms ? errors.rooms + "!" : ""}`,
-        duration: 5,
-        showProgress: true,
-        pauseOnHover: true,
-      });
-
-      return;
     }
-    const link = `/searchresult?city=${location.city}&country=${location.country}&startDate=${startDate}&endDate=${endDate}&adults=${guestInfo.adults}&children=${guestInfo.children}&rooms=${guestInfo.rooms}&lat=${location.geometry.lat}&lng=${location.geometry.lng}`;
-    window.location.href = link;
-  };
+    const formattedLocation = extractLocationDetails(requestBody.location)
+    requestBody.location = formattedLocation
+    const errors = checkInputBooking(requestBody)
+    // if (Object.keys(errors).length > 0) {
+    //   // Trigger a notification if there are errors
+    //   api.error({
+    //     message: "Input Validation Error",
+    //     description:
+    //       `${errors.location ? errors.location + "! \n" : ""}` +
+    //       `${errors.date ? errors.date + "! \n" : ""}` +
+    //       `${errors.adults ? errors.adults + "! \n" : ""}` +
+    //       `${errors.rooms ? errors.rooms + "!" : ""}`,
+    //     duration: 5,
+    //     showProgress: true,
+    //     pauseOnHover: true,
+    //   });
+
+    //   return;
+    // }
+    const link = `/searchresult?city=${location.city}&country=${location.country}&startDate=${startDate}&endDate=${endDate}&adults=${guestInfo.adults}&children=${guestInfo.children}&rooms=${guestInfo.rooms}&lat=${location.geometry.lat}&lng=${location.geometry.lng}`
+    window.location.href = link
+  }
 
   return (
     <section className="search">
@@ -92,8 +92,8 @@ function Search() {
         <div className="search__content">
           <h1 className="search__title">Find Your Ideal Hotel</h1>
           <p className="search__description">
-            Discover the perfect hotel for your next trip. From luxury resorts
-            to budget-friendly stays, book now for the best rates and comfort.
+            Discover the perfect hotel for your next trip. From luxury resorts to budget-friendly stays, book now for
+            the best rates and comfort.
           </p>
 
           <div className="search__bar">
@@ -107,11 +107,7 @@ function Search() {
             </div>
             {/* Date Picker */}
             <div className="search__bar-item">
-              <RangePicker
-                showTime
-                format="YYYY-MM-DD HH:mm:ss"
-                onChange={handleDateChange}
-              />
+              <RangePicker showTime format="YYYY-MM-DD HH:mm:ss" onChange={handleDateChange} />
             </div>
             <div className="search__bar-item search__bar-item--submit">
               <button className="search__submit-btn" onClick={handleSearch}>
@@ -122,7 +118,7 @@ function Search() {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
-export default Search;
+export default Search
