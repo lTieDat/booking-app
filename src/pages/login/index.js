@@ -33,11 +33,12 @@ function Login() {
       }
 
       if (response.status === 200) {
-        const { token } = response
         // Set token in cookies with different keys based on login type
         const tokenKey = isManagerLogin ? 'managerToken' : 'token'
         const expiresInDays = rememberMe ? 30 : 1
 
+        const userData = response.data
+        const token = userData.token
         Cookies.set(tokenKey, token, { expires: expiresInDays })
 
         // Redirect to respective dashboard based on role or login type
