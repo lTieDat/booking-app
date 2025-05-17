@@ -31,8 +31,9 @@ function Login() {
       } else {
         response = await loginUser(email, password)
       }
+      console.log('Login response:', response) // Debug log
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 201 || response.token) {
         // Set token in cookies with different keys based on login type
         const tokenKey = isManagerLogin ? 'managerToken' : 'token'
         const expiresInDays = rememberMe ? 30 : 1
