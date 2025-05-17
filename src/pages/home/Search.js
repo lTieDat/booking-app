@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { DatePicker, notification } from 'antd'
 import RoomPicker from '../../components/RoomPicker'
 import LocationSearch from '../../components/LocationOptions'
-import { post } from '../../utils/index'
 import { checkInputBooking } from '../../utils/validation'
 import extractLocationDetails from '../../utils/addressFormat'
 
@@ -57,23 +56,33 @@ function Search() {
     }
     const formattedLocation = extractLocationDetails(requestBody.location)
     requestBody.location = formattedLocation
-    const errors = checkInputBooking(requestBody)
-    // if (Object.keys(errors).length > 0) {
-    //   // Trigger a notification if there are errors
-    //   api.error({
-    //     message: "Input Validation Error",
-    //     description:
-    //       `${errors.location ? errors.location + "! \n" : ""}` +
-    //       `${errors.date ? errors.date + "! \n" : ""}` +
-    //       `${errors.adults ? errors.adults + "! \n" : ""}` +
-    //       `${errors.rooms ? errors.rooms + "!" : ""}`,
-    //     duration: 5,
-    //     showProgress: true,
-    //     pauseOnHover: true,
-    //   });
+    const { errors } = checkInputBooking(requestBody) // Access the errors sub-object
+    console.log('Validation Errors:', errors) // Debug log
 
-    //   return;
-    // }
+    if (Object.keys(errors).length > 0) {
+      const errorMessages = []
+      if (errors.location) errorMessages.push(`${errors.location}!`)
+      if (errors.startDate) errorMessages.push(`${errors.startDate}!`)
+      if (errors.endDate) errorMessages.push(`${errors.endDate}!`)
+      if (errors.adults) errorMessages.push(`${errors.adults}!`)
+      if (errors.rooms) errorMessages.push(`${errors.rooms}!`)
+
+      api.error({
+        message: 'Input Validation Error',
+        description: (
+          <div>
+            {errorMessages.map((msg, index) => (
+              <div key={index}>{msg}</div>
+            ))}
+          </div>
+        ),
+        duration: 5,
+        showProgress: true,
+        pauseOnHover: true,
+      })
+      return
+    }
+
     const link = `/searchresult?city=${location.city}&country=${location.country}&startDate=${startDate}&endDate=${endDate}&adults=${guestInfo.adults}&children=${guestInfo.children}&rooms=${guestInfo.rooms}&lat=${location.geometry.lat}&lng=${location.geometry.lng}`
     window.location.href = link
   }

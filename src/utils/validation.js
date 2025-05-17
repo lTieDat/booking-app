@@ -19,7 +19,7 @@ const checkInputBooking = (booking) => {
   // testcase: DatLT - InputValidation_NonStringCountry_Fail (VB11.7)
   // testcase: DatLT - InputValidation_MissingLocation_Fail (VB11.10)
   // testcase: DatLT - InputValidation_WhitespaceCountry_Fail (VB11.18)
-  if (!booking.location || typeof booking.location.country !== 'string' || booking.location.country.trim() === '') {
+  if (!booking.location || booking.location.country.trim() === '') {
     errors.location = 'Please select a valid location'
   }
 
