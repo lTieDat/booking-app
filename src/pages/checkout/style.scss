@@ -296,6 +296,13 @@ button {
     margin-bottom: 15px;
 }
 
+.error {
+    color: red;
+    font-size: 12px;
+    display: block;
+    margin-top: 4px;
+}
+
 .checkout__price-row {
     display: flex;
     justify-content: space-between;

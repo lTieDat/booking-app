@@ -1,14 +1,21 @@
 import React from 'react'
-import { Form, Input, Button, InputNumber } from 'antd'
+import { Form, Input, Button, InputNumber, message } from 'antd'
+import { v4 as uuidv4 } from 'uuid'
 
 const AddRoomsStep = ({ rooms, setFormData, handlePrev, handleFinish }) => {
+  const validateUUID = (value) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    return uuidRegex.test(value)
+  }
+
   const addRoom = () => {
+    const newRoomId = uuidv4()
     setFormData((prev) => ({
       ...prev,
       rooms: [
         ...prev.rooms,
         {
-          RoomId: `room-${prev.rooms.length + 1}`,
+          RoomId: newRoomId,
           RoomType: '',
           Description: '',
           BaseRate: 0,
@@ -26,14 +33,70 @@ const AddRoomsStep = ({ rooms, setFormData, handlePrev, handleFinish }) => {
     }))
   }
 
-  // Update a room property
   const updateRoom = (index, key, value) => {
     const updatedRooms = [...rooms]
+
+    // Validation logic
+    if (key === 'RoomType') {
+      if (value.length > 100) {
+        message.error('Room Type must not exceed 100 characters')
+        return
+      }
+      if (!value.trim()) {
+        message.error('Room Type is required')
+        return
+      }
+    }
+
+    if (key === 'Description' && value.length > 1000) {
+      message.error('Description must not exceed 1000 characters')
+      return
+    }
+
+    if (key === 'BaseRate') {
+      if (value <= 0) {
+        message.error('Base Rate must be greater than 0')
+        return
+      }
+    }
+
+    if (key === 'BedOptions' && value.length > 50) {
+      message.error('Bed Options must not exceed 50 characters')
+      return
+    }
+
+    if (key === 'RoomTags') {
+      const tags = value
+      if (tags.length > 5) {
+        message.error('Maximum 5 tags allowed')
+        return
+      }
+      if (tags.some((tag) => tag.length > 30)) {
+        message.error('Each tag must not exceed 30 characters')
+        return
+      }
+    }
+
+    if (key === 'NumberAvailable') {
+      if (value < 0) {
+        message.error('Number Available must be 0 or greater')
+        return
+      }
+      if (value > updatedRooms[index].MaxQuantity) {
+        message.error('Number Available cannot exceed Max Quantity')
+        return
+      }
+    }
+
+    if (key === 'MaxQuantity' && value < 1) {
+      message.error('Max Quantity must be 1 or greater')
+      return
+    }
+
     updatedRooms[index][key] = value
     setFormData((prev) => ({ ...prev, rooms: updatedRooms }))
   }
 
-  // Handle image upload and preview
   const handleImageUpload = (index, file) => {
     const reader = new FileReader()
     reader.onload = () => {
@@ -72,6 +135,7 @@ const AddRoomsStep = ({ rooms, setFormData, handlePrev, handleFinish }) => {
               placeholder="Enter base rate"
               value={room.BaseRate}
               onChange={(value) => updateRoom(index, 'BaseRate', value)}
+              parser={(value) => value.replace(',', '.')}
             />
           </Form.Item>
           <Form.Item label="Bed Options">
@@ -91,7 +155,7 @@ const AddRoomsStep = ({ rooms, setFormData, handlePrev, handleFinish }) => {
           </Form.Item>
           <Form.Item label="Number Available" required>
             <InputNumber
-              min={1}
+              min={0}
               placeholder="Enter number available"
               value={room.NumberAvailable}
               onChange={(value) => updateRoom(index, 'NumberAvailable', value)}
@@ -113,7 +177,10 @@ const AddRoomsStep = ({ rooms, setFormData, handlePrev, handleFinish }) => {
                 updateRoom(
                   index,
                   'RoomTags',
-                  e.target.value.split(',').map((tag) => tag.trim())
+                  e.target.value
+                    .split(',')
+                    .map((tag) => tag.trim())
+                    .filter((tag) => tag)
                 )
               }
             />

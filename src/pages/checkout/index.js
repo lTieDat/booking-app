@@ -6,8 +6,7 @@ import { CheckOutlined } from '@ant-design/icons'
 import { Steps, Input } from 'antd'
 import { formatDateTime, getDateDifference } from '../../utils/timeFormat'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleInfo, faLocationDot } from '@fortawesome/free-solid-svg-icons'
-import { faChildren } from '@fortawesome/free-solid-svg-icons'
+import { faCircleInfo, faLocationDot, faChildren } from '@fortawesome/free-solid-svg-icons'
 import PriceSummary from './price'
 import AddToYourStay from './AddToYourStay'
 import pluralize from '../../utils/pluralize'
@@ -33,46 +32,19 @@ const Checkout = () => {
     { code: 'MX', name: 'Mexico', dial_code: '+52' },
     { code: 'GB', name: 'United Kingdom', dial_code: '+44' },
   ])
-  const [arrivalTime, setArrivalTime] = useState("I don't know")
-  const [airportShuttle, setAirportShuttle] = useState(false)
-  const [rentalCar, setRentalCar] = useState(false)
-  const [taxiShuttle, setTaxiShuttle] = useState(false)
-  const [specialRequest, setSpecialRequest] = useState('')
-
-  const handleCheckboxChange = (e, type) => {
-    const isChecked = e.target.checked
-
-    switch (type) {
-      case 'airportShuttle':
-        setAirportShuttle(isChecked)
-        break
-      case 'rentalCar':
-        setRentalCar(isChecked)
-        break
-      case 'taxiShuttle':
-        setTaxiShuttle(isChecked)
-        break
-      default:
-        break
-    }
-  }
-
-  const handleSpecialRequestChange = (e) => {
-    setSpecialRequest(e.target.value)
-  }
-
-  const handleTimeChange = (e) => {
-    setArrivalTime(e.target.value)
-  }
-
-  // State to handle form inputs
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
+    customerName: '',
+    customerEmail: '',
     country: '',
     phoneNo: '',
-    phonePrefix: '84',
+    phonePrefix: '+84',
+    arrivalTime: "I don't know",
+    airportShuttle: false,
+    rentalCar: false,
+    taxiShuttle: false,
+    specialRequest: '',
   })
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     const fetchBookingData = async () => {
@@ -109,7 +81,6 @@ const Checkout = () => {
     const fetchPrefixes = async () => {
       try {
         const fetchedPrefixes = await getPrefixes()
-        console.log('Fetched prefixes:', fetchedPrefixes)
         setPrefixes(fetchedPrefixes)
       } catch (error) {
         console.error('Error fetching prefixes:', error)
@@ -120,45 +91,119 @@ const Checkout = () => {
     fetchBookingData()
   }, [bookingId])
 
-  let duration = null
+  const validateForm = () => {
+    const newErrors = {}
 
-  if (booking?.checkInDate && booking?.checkOutDate) {
-    try {
-      duration = getDateDifference(booking.checkInDate, booking.checkOutDate)
-    } catch (error) {
-      console.error('Error calculating duration:', error)
+    // Validate customerName
+    if (!formData.customerName) {
+      newErrors.customerName = 'Customer name is required'
+    } else if (formData.customerName.length < 2) {
+      newErrors.customerName = 'Customer name must be at least 2 characters'
+    } else if (formData.customerName.length > 100) {
+      newErrors.customerName = 'Customer name must not exceed 100 characters'
+    } else if (!/^[a-zA-Z\s\-\']+$/.test(formData.customerName)) {
+      newErrors.customerName = 'Customer name can only contain letters, spaces, hyphens, and apostrophes'
     }
-  } else {
-    duration = 'N/A'
+
+    // Validate customerEmail
+    if (!formData.customerEmail) {
+      newErrors.customerEmail = 'Email is required'
+    } else if (formData.customerEmail.length < 5) {
+      newErrors.customerEmail = 'Email must be at least 5 characters'
+    } else if (formData.customerEmail.length > 100) {
+      newErrors.customerEmail = 'Email must not exceed 100 characters'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customerEmail)) {
+      newErrors.customerEmail = 'Invalid email format'
+    }
+
+    // Validate specialRequest
+    if (formData.specialRequest.length > 500) {
+      newErrors.specialRequest = 'Special request must not exceed 500 characters'
+    }
+
+    //validate country != select country
+    if (!formData.country) {
+      newErrors.country = 'Country is required'
+    } else if (formData.country.length < 2) {
+      newErrors.country = 'Country must be at least 2 characters'
+    } else if (formData.country.length > 100) {
+      newErrors.country = 'Country must not exceed 100 characters'
+    } else if (!/^[a-zA-Z\s\-\']+$/.test(formData.country)) {
+      newErrors.country = 'Country can only contain letters, spaces, hyphens, and apostrophes'
+    }
+
+    // Validate country and phonePrefix correspondence
+    if (formData.country) {
+      const selectedPrefix = prefixes.find((prefix) => prefix.name === formData.country)
+      if (selectedPrefix && selectedPrefix.dial_code !== formData.phonePrefix) {
+        newErrors.country = 'Selected country does not match the phone prefix'
+      }
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
-  //handle price
-  const VAT = 8
-  const originalPrice = rooms.reduce((acc, room) => acc + room.BaseRate, 0)
-  const finalPrice = parseFloat(originalPrice * (1 + parseFloat(VAT / 100))).toFixed(2)
-
-  // Handle input change
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value,
+    setFormData((prev) => {
+      const newFormData = { ...prev, [name]: value }
+      // Auto-update phonePrefix when country changes
+      if (name === 'country') {
+        const selectedPrefix = prefixes.find((prefix) => prefix.name === value)
+        if (selectedPrefix) {
+          newFormData.phonePrefix = selectedPrefix.dial_code
+        }
+      }
+      return newFormData
     })
+    // Clear error for the field being edited
+    setErrors((prev) => ({ ...prev, [name]: '' }))
   }
 
-  // Handle booking
+  const handleCheckboxChange = (e, type) => {
+    const isChecked = e.target.checked
+    setFormData((prev) => ({
+      ...prev,
+      [type]: isChecked,
+    }))
+  }
+
+  const handleSpecialRequestChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      specialRequest: e.target.value,
+    }))
+    setErrors((prev) => ({ ...prev, specialRequest: '' }))
+  }
+
+  const handleTimeChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      arrivalTime: e.target.value,
+    }))
+  }
+
   const handleBooking = () => {
+    if (!validateForm()) {
+      alert('Please fix the errors in the form before submitting.')
+      return
+    }
+
     const requestBody = {
-      ...formData,
-      phoneNo: `${formData.phonePrefix}${formData.phoneNo}`,
-      finalPrice,
-      arrivalTime,
-      airportShuttle,
-      rentalCar,
-      taxiShuttle,
-      specialRequest: specialRequest.trim(),
+      customerName: formData.customerName,
+      customerEmail: formData.customerEmail,
+      phoneNo: formData.phoneNo ? `${formData.phonePrefix}${formData.phoneNo}` : '',
+      country: formData.country,
+      finalPrice: parseFloat(rooms.reduce((acc, room) => acc + room.BaseRate, 0) * 1.08).toFixed(2),
+      arrivalTime: formData.arrivalTime,
+      airportShuttle: formData.airportShuttle,
+      rentalCar: formData.rentalCar,
+      taxiShuttle: formData.taxiShuttle,
+      specialRequest: formData.specialRequest.trim(),
       bookingId,
     }
+
     const updateBooking = async () => {
       try {
         const response = await fetch(`http://localhost:3002/api/v1/booking/${bookingId}/update`, {
@@ -178,13 +223,21 @@ const Checkout = () => {
         }
       } catch (error) {
         console.error('Error updating booking:', error)
+        alert('An error occurred while updating the booking.')
       }
     }
     updateBooking()
   }
 
+  let duration =
+    booking?.checkInDate && booking?.checkOutDate ? getDateDifference(booking.checkInDate, booking.checkOutDate) : 'N/A'
+
+  const VAT = 8
+  const originalPrice = rooms.reduce((acc, room) => acc + room.BaseRate, 0)
+  const finalPrice = parseFloat(originalPrice * (1 + VAT / 100)).toFixed(2)
+
   const selectBefore = (
-    <select defaultValue="84" name="phonePrefix" onChange={handleInputChange}>
+    <select name="phonePrefix" value={formData.phonePrefix} onChange={handleInputChange}>
       {prefixes.map((prefix) => (
         <option key={prefix.code} value={prefix.dial_code}>
           {prefix.name} {prefix.dial_code}
@@ -237,33 +290,49 @@ const Checkout = () => {
               <label>Full name * </label>
               <input
                 type="text"
-                name="fullName"
+                name="customerName"
                 placeholder="Ex: Le Tien Dat"
-                value={formData.fullName}
+                value={formData.customerName}
                 onChange={handleInputChange}
                 required
               />
+              {errors.customerName && (
+                <span className="error" style={{ color: 'red' }}>
+                  {errors.customerName}
+                </span>
+              )}
             </div>
             <div className="checkout__guest-Email">
               <label>Email * </label>
               <input
                 type="email"
-                name="email"
+                name="customerEmail"
                 placeholder="Ex: abc@gmail.com"
-                value={formData.email}
+                value={formData.customerEmail}
                 onChange={handleInputChange}
                 required
               />
+              {errors.customerEmail && (
+                <span className="error" style={{ color: 'red' }}>
+                  {errors.customerEmail}
+                </span>
+              )}
             </div>
             <div className="checkout__guest-Country">
               <label>Country/region </label>
               <select name="country" value={formData.country} onChange={handleInputChange}>
+                <option value="">Select a country</option>
                 {prefixes.map((prefix) => (
                   <option key={prefix.code} value={prefix.name}>
                     {prefix.name}
                   </option>
                 ))}
               </select>
+              {errors.country && (
+                <span className="error" style={{ color: 'red' }}>
+                  {errors.country}
+                </span>
+              )}
             </div>
             <div className="checkout__guest-dial">
               <label>Phone No </label>
@@ -275,7 +344,6 @@ const Checkout = () => {
                   placeholder="Enter phone number"
                   value={formData.phoneNo}
                   onChange={handleInputChange}
-                  required
                 />
               </div>
             </div>
@@ -346,17 +414,17 @@ const Checkout = () => {
         <div className="sider-display">
           <div className="checkout__hotel">{hotelDetails()}</div>
           <div className="checkout__booking">{bookingDetail()}</div>
-          <PriceSummary originalPrice={originalPrice} finalPrice={0} VAT={0.08} />
+          <PriceSummary originalPrice={originalPrice} finalPrice={finalPrice} VAT={0.08} />
         </div>
         <div className="main-display">
           <div className="checkout__guest">{checkoutInformation()}</div>
           <div className="checkout__room">{renderRoomDetails()}</div>
-          <ArrivalTime arrivalTime={arrivalTime} handleTimeChange={handleTimeChange} />
+          <ArrivalTime arrivalTime={formData.arrivalTime} handleTimeChange={handleTimeChange} />
           <AddToYourStay
-            airportShuttle={airportShuttle}
-            rentalCar={rentalCar}
-            taxiShuttle={taxiShuttle}
-            specialRequest={specialRequest}
+            airportShuttle={formData.airportShuttle}
+            rentalCar={formData.rentalCar}
+            taxiShuttle={formData.taxiShuttle}
+            specialRequest={formData.specialRequest}
             handleCheckboxChange={handleCheckboxChange}
             handleSpecialRequestChange={handleSpecialRequestChange}
           />
