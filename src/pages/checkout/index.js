@@ -14,7 +14,7 @@ import ArrivalTime from './ArrivalTime'
 import './style.scss'
 
 const Checkout = () => {
-  const bookingId = window.location.pathname.split('/').pop()
+  const [bookingId, setBookingId] = useState(localStorage.getItem('bookingId'))
   const [booking, setBooking] = useState(null)
   const [rooms, setRooms] = useState([])
   const [hotel, setHotel] = useState(null)
@@ -205,6 +205,7 @@ const Checkout = () => {
     }
 
     const updateBooking = async () => {
+      console.log('bookingId', bookingId)
       try {
         const response = await fetch(`http://localhost:3002/api/v1/booking/${bookingId}/update`, {
           method: 'POST',
@@ -215,6 +216,7 @@ const Checkout = () => {
         })
         const data = await response.json()
         if (data.status === 200) {
+          console.log('Booking updated successfully:', data)
           window.location.href = `/booking/${bookingId}/final`
         } else if (data.status === 404) {
           alert('Booking not found.')
@@ -227,6 +229,7 @@ const Checkout = () => {
       }
     }
     updateBooking()
+    console.log('requestBody', requestBody)
   }
 
   let duration =
