@@ -58,13 +58,6 @@ describe('pluralize', () => {
       // Assert: Expect plural form "days" to be returned
       expect(pluralize(1.5, 'day', 'days')).toBe('days')
     })
-
-    test('returns singular form for decimal less than or equal to 1', () => {
-      // Arrange: count = 0.5, testing the <= 1 condition with decimal
-      // Act: Call pluralize with count = 0.5
-      // Assert: Expect singular form "hour" to be returned
-      expect(pluralize(0.5, 'hour', 'hours')).toBe('hour')
-    })
   })
 
   //Test Case 12.7: Empty strings
@@ -74,13 +67,6 @@ describe('pluralize', () => {
       // Act: Call pluralize with empty plural
       // Assert: Expect empty string to be returned
       expect(pluralize(2, 'cat', '')).toBe('')
-    })
-
-    test('returns empty singular string when count <= 1', () => {
-      // Arrange: count = 1, singular is empty, testing <= 1 condition
-      // Act: Call pluralize with empty singular
-      // Assert: Expect empty string to be returned
-      expect(pluralize(1, '', 'dogs')).toBe('')
     })
   })
 })

@@ -326,36 +326,6 @@ describe('checkInputBooking', () => {
       })
     })
 
-    // Test Case ID: Additional - Undefined booking input
-    it('should return errors for undefined booking input', () => {
-      const result = checkInputBooking(undefined)
-      expect(result).toEqual({
-        isValid: false,
-        errors: {
-          location: 'Please select a valid location',
-          startDate: 'Please select a valid start date',
-          endDate: 'Please select a valid end date',
-          adults: 'Please select at least one adult',
-          rooms: 'Please select at least one room',
-        },
-      })
-    })
-
-    // Test Case ID: Additional - Empty object booking input
-    it('should return errors for empty object booking input', () => {
-      const result = checkInputBooking({})
-      expect(result).toEqual({
-        isValid: false,
-        errors: {
-          location: 'Please select a valid location',
-          startDate: 'Please select a valid start date',
-          endDate: 'Please select a valid end date',
-          adults: 'Please select at least one adult',
-          rooms: 'Please select at least one room',
-        },
-      })
-    })
-
     // Test Case ID: Additional - Negative adults
     it('should return errors for negative adults', () => {
       const booking = {

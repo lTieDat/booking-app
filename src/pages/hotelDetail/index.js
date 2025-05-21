@@ -91,7 +91,7 @@ const HotelDetail = () => {
         <div className="hotel-detail-search__title">
           <h3>Available rooms</h3>
         </div>
-        <div className="hotel-detail-search__body">
+        {/* <div className="hotel-detail-search__body">
           <RoomPicker guestInfo={booking} setGuestInfo={handleBookingChange} />
           <RangePicker
             showTime
@@ -110,7 +110,7 @@ const HotelDetail = () => {
           <button className="button" onClick={handleSearch}>
             Search
           </button>
-        </div>
+        </div> */}
         <RoomSlider rooms={hotel.Rooms} setSelectedRooms={setSelectedRooms} />
         <button className="button__submit" onClick={handleCheckout}>
           Checkout
