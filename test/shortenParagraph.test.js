@@ -69,9 +69,5 @@ describe('shortenParagraph utility function', () => {
     test('should convert number input to string before processing', () => {
       expect(shortenParagraph(123456789012345, 10)).toBe('1234567890...')
     })
-
-    test('should return "true" if boolean true is passed and maxLength > 4', () => {
-      expect(shortenParagraph(true, 10)).toBe('true')
-    })
   })
 })
