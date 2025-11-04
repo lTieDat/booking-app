@@ -4,24 +4,17 @@ import Cookies from 'js-cookie'
 import { Button, Modal, Input, Form, notification } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { formatDateTimeExceptHour } from '../../utils/timeFormat'
+import useProfileForm from '../../components/CustomHook/useProfileForm'
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('Personal details')
   const [userData, setUserData] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [currentField, setCurrentField] = useState('')
-  const [editData, setEditData] = useState({
-    fullName: '',
-    phone: '',
-    address: '',
-    dateOfBirth: '',
-    userName: '',
-    email: '',
-  })
   const [confirmLoading, setConfirmLoading] = useState(false)
+  const [dataUpdated, setDataUpdated] = useState(false)
 
   const navigate = useNavigate()
-  const [dataUpdated, setDataUpdated] = useState(false)
+  const { currentField, setCurrentField, getValues } = useProfileForm(userData || {})
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -31,7 +24,6 @@ const ProfilePage = () => {
           const user = await getUserByToken(token)
           if (user.status === 200) {
             setUserData(user.data)
-            setEditData(user.data)
           } else {
             console.error('Error fetching user data', user)
           }
@@ -44,7 +36,7 @@ const ProfilePage = () => {
       }
     }
     fetchUserData()
-  }, [dataUpdated])
+  }, [dataUpdated, navigate])
 
   const handleTabClick = (tab) => {
     setActiveTab(tab)
@@ -55,19 +47,12 @@ const ProfilePage = () => {
     setIsModalOpen(true)
   }
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setEditData({
-      ...editData,
-      [name]: value,
-    })
-  }
-
   const handleSaveAll = async () => {
     try {
       setConfirmLoading(true)
       const token = Cookies.get('token')
       if (token) {
+        const editData = getValues()
         const response = await updateProfile(token, editData)
         if (response.status === 200) {
           notification.success({
@@ -148,16 +133,16 @@ const ProfilePage = () => {
         <div style={{ marginTop: '20px' }}>
           {activeTab === 'Personal details' && userData && (
             <>
-              <DetailRow label="Name" value={editData.fullName} onEdit={() => handleEditClick('fullName')} />
-              <DetailRow label="Display name" value={editData.userName} onEdit={() => handleEditClick('userName')} />
-              <DetailRow label="Email address" value={editData.email} onEdit={() => handleEditClick('email')} />
-              <DetailRow label="Phone number" value={editData.phone} onEdit={() => handleEditClick('phone')} />
+              <DetailRow label="Name" value={userData.fullName} onEdit={() => handleEditClick('fullName')} />
+              <DetailRow label="Display name" value={userData.userName} onEdit={() => handleEditClick('userName')} />
+              <DetailRow label="Email address" value={userData.email} onEdit={() => handleEditClick('email')} />
+              <DetailRow label="Phone number" value={userData.phone} onEdit={() => handleEditClick('phone')} />
               <DetailRow
                 label="Date of birth"
-                value={formatDateTimeExceptHour(editData.dateOfBirth)}
+                value={formatDateTimeExceptHour(userData.dateOfBirth)}
                 onEdit={() => handleEditClick('dateOfBirth')}
               />
-              <DetailRow label="Address" value={editData.address} onEdit={() => handleEditClick('address')} />
+              <DetailRow label="Address" value={userData.address} onEdit={() => handleEditClick('address')} />
             </>
           )}
         </div>
@@ -178,32 +163,32 @@ const ProfilePage = () => {
         <Form>
           {currentField === 'fullName' && (
             <Form.Item label="Full Name">
-              <Input name="fullName" value={editData.fullName} onChange={handleInputChange} />
+              <Input placeholder="Full Name" />
             </Form.Item>
           )}
           {currentField === 'userName' && (
             <Form.Item label="User Name">
-              <Input name="userName" value={editData.userName} onChange={handleInputChange} />
+              <Input placeholder="User Name" />
             </Form.Item>
           )}
           {currentField === 'email' && (
             <Form.Item label="Email">
-              <Input type="email" name="email" value={editData.email} onChange={handleInputChange} />
+              <Input type="email" placeholder="Email" />
             </Form.Item>
           )}
           {currentField === 'phone' && (
             <Form.Item label="Phone">
-              <Input name="phone" value={editData.phone} onChange={handleInputChange} />
+              <Input placeholder="Phone" />
             </Form.Item>
           )}
           {currentField === 'dateOfBirth' && (
             <Form.Item label="Date of Birth">
-              <Input type="date" name="dateOfBirth" value={editData.dateOfBirth} onChange={handleInputChange} />
+              <Input type="date" />
             </Form.Item>
           )}
           {currentField === 'address' && (
             <Form.Item label="Address">
-              <Input name="address" value={editData.address} onChange={handleInputChange} />
+              <Input placeholder="Address" />
             </Form.Item>
           )}
         </Form>

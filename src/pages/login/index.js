@@ -1,55 +1,42 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../../components/CustomCss/login.scss'
-import { loginUser, loginManager } from '../../service/userService' // Import separate functions
+import { loginUser, loginManager } from '../../service/userService'
 import Cookies from 'js-cookie'
 import { notification } from 'antd'
 import Logo from '../../components/Logo'
 import LogoManager from '../../components/Logo/LogoManager'
 import { Checkbox } from 'antd'
+import useLoginForm from '../../components/CustomHook/useLoginForm'
 
 function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
   const navigate = useNavigate()
   const pathName = window.location.pathname
   const isManagerLogin = pathName.includes('loginManager')
+  const { handleSubmit, errors, fields } = useLoginForm()
 
-  const handleRememberMe = (e) => {
-    setRememberMe(e.target.checked)
-  }
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-
+  const onSubmit = async (data) => {
     try {
       let response
-      // Call the respective login service based on the login type
       if (isManagerLogin) {
-        response = await loginManager(email, password)
+        response = await loginManager(data.email, data.password)
       } else {
-        response = await loginUser(email, password)
+        response = await loginUser(data.email, data.password)
       }
-      console.log('Login response:', response) // Debug log
+      console.log('Login response:', response)
 
       if (response.status === 200 || response.status === 201 || response.token) {
-        // Set token in cookies with different keys based on login type
         const tokenKey = isManagerLogin ? 'managerToken' : 'token'
-        const expiresInDays = rememberMe ? 30 : 1
-
+        const expiresInDays = data.rememberMe ? 30 : 1
         const userData = response.data
         const token = userData.token
         Cookies.set(tokenKey, token, { expires: expiresInDays })
 
-        // Redirect to respective dashboard based on role or login type
         if (isManagerLogin) {
-          //store to local storage
           localStorage.setItem('manager', JSON.stringify(response.data))
-          navigate('/admin/managePage') // Redirect manager
+          navigate('/admin/managePage')
         } else {
           localStorage.setItem('user', JSON.stringify(response.data))
-          navigate('/') // Redirect normal user
+          navigate('/')
         }
       } else if (response.status === 400) {
         notification.error({
@@ -75,33 +62,29 @@ function Login() {
       <div className="login__logo">{isManagerLogin ? <LogoManager /> : <Logo />}</div>
       <div className="login">
         <h2 className="login__title">Sign In</h2>
-        <form className="login__form" onSubmit={handleSubmit}>
+        <form className="login__form" onSubmit={handleSubmit(onSubmit)}>
           <div className="login__form-group">
             <label className="login__label" htmlFor="email">
               Email address
             </label>
-            <input
-              className="login__input"
-              type="text"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <input className="login__input" type="text" id="email" {...fields.email} />
+            {errors.email && (
+              <span className="error" style={{ color: 'red' }}>
+                {errors.email.message}
+              </span>
+            )}
             <label className="login__label" htmlFor="password">
               Password
             </label>
-            <input
-              className="login__input"
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <input className="login__input" type="password" id="password" {...fields.password} />
+            {errors.password && (
+              <span className="error" style={{ color: 'red' }}>
+                {errors.password.message}
+              </span>
+            )}
           </div>
           <div className="login__authentication">
-            <Checkbox className="login__checkbox" onChange={handleRememberMe}>
+            <Checkbox className="login__checkbox" {...fields.rememberMe}>
               Keep me signed in
             </Checkbox>
             <a className="login__forgot-password" href="/forgot-password">
