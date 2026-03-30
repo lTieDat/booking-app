@@ -1,4 +1,4 @@
-import { checkInputBooking } from '../src/utils/validation'
+import { checkInputBooking } from '../booking-validation'
 
 describe('checkInputBooking', () => {
   describe('Valid Inputs', () => {

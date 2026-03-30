@@ -1,4 +1,4 @@
-import extractLocationDetails from '../src/utils/addressFormat'
+import { extractLocationDetails } from '../location'
 
 describe('extractLocationDetails', () => {
   // 10.1: All fields present

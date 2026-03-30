@@ -1,4 +1,4 @@
-import shortenParagraph from '../src/utils/shortenParagraph.js'
+import { shortenParagraph } from '../text'
 
 describe('shortenParagraph utility function', () => {
   // 13.1 Short text within limit

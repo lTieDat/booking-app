@@ -1,13 +1,11 @@
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
-  testEnvironment: 'jsdom', // For React components
+  testEnvironment: 'jsdom',
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest', // Transform JS/JSX files
+    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
-  transformIgnorePatterns: [
-    '/node_modules/(?!axios)/', // Transform axios for ESM
-  ],
   moduleNameMapper: {
-    '\\.(css|scss)$': 'identity-obj-proxy', // Mock SCSS imports
+    '\\.(css|scss)$': 'identity-obj-proxy',
   },
-}
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+};

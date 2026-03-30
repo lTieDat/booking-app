@@ -1,4 +1,4 @@
-import { formatDateTime, getDateDifference, formatDateTimeExceptHour } from '../src/utils/timeFormat.js'
+import { formatDateTime, getDateDifference, formatDateTimeExceptHour } from '../format'
 
 /* =============================
    14.x - Tests for formatDateTime
