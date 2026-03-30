@@ -1,4 +1,4 @@
-import pluralize from '../src/utils/pluralize'
+import { pluralize } from '../format'
 
 describe('pluralize', () => {
   // Test Case 12.1: Singular form when count is exactly 1
