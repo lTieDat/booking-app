@@ -1,7 +1,7 @@
-import { useLoaderData } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { getDashboardQuery } from '../api/dashboard-api';
 import { Card } from '../../../shared/ui/card';
 import { formatCurrency } from '../../../shared/lib/format';
-import type { DashboardData, Hotel } from '../../../shared/types/domain';
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
@@ -13,10 +13,8 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 }
 
 export default function DashboardPage() {
-  const { dashboard, hotels } = useLoaderData({ from: '/admin/managePage/dashboard' }) as {
-    dashboard: DashboardData;
-    hotels: Hotel[];
-  };
+  const { data } = useSuspenseQuery(getDashboardQuery());
+  const { dashboard, hotels } = data;
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">

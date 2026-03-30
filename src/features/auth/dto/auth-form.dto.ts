@@ -28,6 +28,20 @@ export interface RegisterRequestDto extends LoginRequestDto {
   fullName: string;
 }
 
+export interface RegisterResponseBody {
+  message?: string;
+}
+
+export interface VerifyEmailRequestDto {
+  email: string;
+  otp: string;
+}
+
+export interface VerifyEmailResponseBody {
+  message?: string;
+  verified?: boolean;
+}
+
 export function toLoginRequestDto(values: LoginFormValues): LoginRequestDto {
   return {
     email: values.email,

@@ -1,30 +1,27 @@
-import { useMemo, useState } from 'react';
-import { useLoaderData } from '@tanstack/react-router';
-import { submitReview } from '../api/history-api';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { getBookingHistoryQuery } from '../api/history-api';
+import { ReviewDialog } from '../components/review-dialog';
+import { useBookingHistoryPage } from '../hooks/use-booking-history-page';
 import { Button } from '../../../shared/ui/button';
 import { Card } from '../../../shared/ui/card';
 import { EmptyState } from '../../../shared/ui/empty-state';
-import { Field } from '../../../shared/ui/field';
-import { Select } from '../../../shared/ui/select';
-import { Textarea } from '../../../shared/ui/textarea';
 import { formatCurrency, formatDate, getNightCount, pluralize } from '../../../shared/lib/format';
-import type { BookingRecord, Hotel, UserProfile } from '../../../shared/types/domain';
-
-interface BookingWithHotel extends BookingRecord {
-  hotel: Hotel;
-}
 
 export default function BookingHistoryPage() {
-  const { user, bookings } = useLoaderData({ from: '/bookings-trips' }) as {
-    user: UserProfile;
-    bookings: BookingWithHotel[];
-  };
-  const [activeBooking, setActiveBooking] = useState<BookingWithHotel | null>(null);
-  const [reviewText, setReviewText] = useState('');
-  const [rating, setRating] = useState(5);
-  const [status, setStatus] = useState<string | null>(null);
-
-  const items = useMemo(() => bookings ?? [], [bookings]);
+  const { data } = useSuspenseQuery(getBookingHistoryQuery());
+  const { user, bookings } = data;
+  const {
+    items,
+    activeBooking,
+    status,
+    reviewForm: {
+      register,
+      formState: { errors, isSubmitting },
+    },
+    openReview,
+    closeReview,
+    submit,
+  } = useBookingHistoryPage(user, bookings);
 
   if (!items.length) {
     return (
@@ -67,7 +64,7 @@ export default function BookingHistoryPage() {
                   {pluralize(nights, 'night', 'nights')}
                 </p>
                 <div className="flex gap-3">
-                  <Button variant="secondary" onClick={() => setActiveBooking(booking)}>
+                  <Button variant="secondary" onClick={() => openReview(booking)}>
                     {booking.review === 'no reviews' ? 'Add review' : 'See review'}
                   </Button>
                 </div>
@@ -84,61 +81,16 @@ export default function BookingHistoryPage() {
       </div>
 
       {activeBooking ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/50 px-4">
-          <Card className="w-full max-w-xl rounded-[32px] p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Review stay</p>
-                <h2 className="text-2xl font-semibold text-slate-900">{activeBooking.hotel.HotelName}</h2>
-              </div>
-              <Button variant="ghost" onClick={() => setActiveBooking(null)}>
-                Close
-              </Button>
-            </div>
-
-            {activeBooking.review !== 'no reviews' && activeBooking.review ? (
-              <div className="mt-6 space-y-3">
-                <p className="text-sm text-slate-500">Rating: {activeBooking.review.rating}</p>
-                <p className="text-sm leading-6 text-slate-600">{activeBooking.review.reviewText}</p>
-              </div>
-            ) : (
-              <div className="mt-6 space-y-4">
-                <Field label="Rating">
-                  <Select value={String(rating)} onChange={(event) => setRating(Number(event.target.value))}>
-                    {[5, 4, 3, 2, 1].map((value) => (
-                      <option key={value} value={value}>
-                        {value}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label="Review">
-                  <Textarea value={reviewText} onChange={(event) => setReviewText(event.target.value)} />
-                </Field>
-                {status ? <p className="text-sm font-medium text-slate-700">{status}</p> : null}
-                <Button
-                  onClick={async () => {
-                    try {
-                      setStatus(null);
-                      await submitReview({
-                        bookingId: activeBooking.bookingId ?? '',
-                        hotelId: activeBooking.hotelId ?? '',
-                        userId: activeBooking.userId ?? '',
-                        reviewText,
-                        rating,
-                      });
-                      setStatus('Review submitted successfully.');
-                    } catch (error) {
-                      setStatus(error instanceof Error ? error.message : 'Unable to submit review');
-                    }
-                  }}
-                >
-                  Submit review
-                </Button>
-              </div>
-            )}
-          </Card>
-        </div>
+        <ReviewDialog
+          hotel={activeBooking.hotel}
+          existingReview={activeBooking.review !== 'no reviews' ? activeBooking.review ?? null : null}
+          register={register}
+          errors={errors}
+          status={status}
+          isSubmitting={isSubmitting}
+          onClose={closeReview}
+          onSubmit={submit}
+        />
       ) : null}
     </div>
   );

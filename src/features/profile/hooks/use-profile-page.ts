@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { updateProfile } from '../api/profile-api';
+import { useMutation } from '@tanstack/react-query';
+import { getUpdateProfileMutation } from '../api/profile-api';
 import { toProfileUpdateDto, type ProfileFormValues } from '../dto/profile-form.dto';
 import { useProfileForm } from './use-profile-form';
+import { queryClient } from '../../../shared/query/query-client';
 import type { UserProfile } from '../../../shared/types/domain';
 
 function getErrorMessage(error: unknown) {
@@ -11,11 +13,13 @@ function getErrorMessage(error: unknown) {
 export function useProfilePage(user: UserProfile) {
   const [status, setStatus] = useState<string | null>(null);
   const form = useProfileForm(user);
+  const updateProfileMutation = useMutation(getUpdateProfileMutation());
 
   const submit = form.handleSubmit(async (values: ProfileFormValues) => {
     try {
       setStatus(null);
-      await updateProfile(toProfileUpdateDto(values));
+      await updateProfileMutation.mutateAsync(toProfileUpdateDto(values));
+      await queryClient.invalidateQueries({ queryKey: ['profile', 'me'] });
       setStatus('Profile updated successfully.');
     } catch (error) {
       setStatus(getErrorMessage(error));

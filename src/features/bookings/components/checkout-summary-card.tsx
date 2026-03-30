@@ -6,6 +6,7 @@ interface CheckoutSummaryCardProps {
   selectedArrivalTime?: string;
   roomSubtotal: number;
   finalPrice: number;
+  taxesAndFees: number;
   isSubmitting: boolean;
 }
 
@@ -13,6 +14,7 @@ export function CheckoutSummaryCard({
   selectedArrivalTime,
   roomSubtotal,
   finalPrice,
+  taxesAndFees,
   isSubmitting,
 }: CheckoutSummaryCardProps) {
   return (
@@ -35,7 +37,7 @@ export function CheckoutSummaryCard({
         </div>
         <div className="flex items-center justify-between">
           <span>Taxes and fees</span>
-          <span className="font-medium text-slate-900">{formatCurrency(finalPrice - roomSubtotal)}</span>
+          <span className="font-medium text-slate-900">{formatCurrency(taxesAndFees)}</span>
         </div>
         <div className="flex items-center justify-between border-t border-slate-200 pt-3 text-base">
           <span className="font-semibold text-slate-900">Final total</span>

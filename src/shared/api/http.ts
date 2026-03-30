@@ -38,18 +38,28 @@ export function createUrl(path: string, query?: QueryParams) {
 
 async function parseResponse<T>(response: Response): Promise<T> {
   const text = await response.text();
-  const payload = text ? JSON.parse(text) : null;
+  let payload: unknown = null;
+
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      payload = text;
+    }
+  }
 
   if (!response.ok) {
     const message =
       typeof payload === 'object' && payload && 'message' in payload
         ? String((payload as { message?: unknown }).message)
+        : typeof payload === 'string' && payload.trim()
+          ? payload
         : `Request failed with status ${response.status}`;
 
     throw new ApiError(message, response.status, payload);
   }
 
-  return payload as T;
+  return (payload ?? null) as T;
 }
 
 export async function requestJson<T>(path: string, init?: RequestInit, query?: QueryParams) {
@@ -74,4 +84,42 @@ export function postJson<T>(path: string, body?: unknown) {
     method: 'POST',
     body: body === undefined ? undefined : JSON.stringify(body),
   });
+}
+
+interface ClientRequestOptions {
+  query?: QueryParams;
+  signal?: AbortSignal;
+  headers?: HeadersInit;
+  body?: string | FormData;
+  method?: string;
+}
+
+export class HttpClient {
+  request<T>(path: string, options?: ClientRequestOptions) {
+    return requestJson<T>(
+      path,
+      {
+        method: options?.method ?? 'GET',
+        signal: options?.signal,
+        headers: options?.headers,
+        body: options?.body,
+      },
+      options?.query
+    );
+  }
+
+  get<T>(path: string, options?: Omit<ClientRequestOptions, 'body' | 'method'>) {
+    return this.request<T>(path, {
+      ...options,
+      method: 'GET',
+    });
+  }
+
+  post<T>(path: string, body?: unknown, options?: Omit<ClientRequestOptions, 'body' | 'method'>) {
+    return this.request<T>(path, {
+      ...options,
+      method: 'POST',
+      body: body instanceof FormData || typeof body === 'string' ? body : body === undefined ? undefined : JSON.stringify(body),
+    });
+  }
 }

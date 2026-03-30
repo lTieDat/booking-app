@@ -3,7 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { clearStoredSession } from '../session/session';
 import { useSession } from '../session/use-session';
 import { Button } from '../ui/button';
-import { defaultBookingSearch } from '../../features/search/api/search-api';
+import { defaultBookingSearch } from '../lib/booking-search';
 
 interface PublicShellProps {
   compact?: boolean;

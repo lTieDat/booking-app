@@ -1,31 +1,47 @@
 import { startTransition, useMemo, useState, useTransition } from 'react';
-import { useLoaderData, useNavigate } from '@tanstack/react-router';
+import { useNavigate, useParams } from '@tanstack/react-router';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { Card } from '../../../shared/ui/card';
 import { Button } from '../../../shared/ui/button';
 import { formatCurrency } from '../../../shared/lib/format';
-import { createDraftBooking } from '../api/hotels-api';
-import type { BookingSearch, Hotel } from '../../../shared/types/domain';
+import { getCreateDraftBookingMutation, getHotelDetailQuery } from '../api/hotels-api';
+import { useBookingSearchQuery } from '../../search/hooks/use-booking-search-query';
 
 export default function HotelDetailPage() {
   const navigate = useNavigate();
-  const { hotel, bookingSearch } = useLoaderData({ from: '/hotelDetail/$hotelId' }) as {
-    hotel: Hotel;
-    bookingSearch: BookingSearch;
-  };
+  const bookingSearch = useBookingSearchQuery().bookingSearch;
+  const { hotelId } = useParams({ from: '/hotelDetail/$hotelId' });
+  const { data: hotel } = useSuspenseQuery(getHotelDetailQuery(hotelId, bookingSearch));
+  const createDraftBookingMutation = useMutation(getCreateDraftBookingMutation());
   const [pending, startBookingTransition] = useTransition();
   const [selection, setSelection] = useState<Record<string, number>>({});
+  const [status, setStatus] = useState<string | null>(null);
 
   const rooms = useMemo(() => hotel.Rooms ?? [], [hotel.Rooms]);
+  const requestedRooms = useMemo(() => Math.max(1, bookingSearch.rooms || 1), [bookingSearch.rooms]);
   const totalSelectedRooms = useMemo(
     () => Object.values(selection).reduce((total, value) => total + value, 0),
     [selection]
   );
 
   const updateQuantity = (roomId: string, nextQuantity: number) => {
-    setSelection((current) => ({
-      ...current,
-      [roomId]: Math.max(0, nextQuantity),
-    }));
+    setSelection((current) => {
+      const currentQuantity = current[roomId] ?? 0;
+      const sanitizedQuantity = Math.max(0, nextQuantity);
+      const nextTotal = totalSelectedRooms - currentQuantity + sanitizedQuantity;
+
+      if (nextTotal > requestedRooms) {
+        setStatus(`You can select up to ${requestedRooms} room${requestedRooms > 1 ? 's' : ''} for this booking.`);
+        return current;
+      }
+
+      setStatus(null);
+
+      return {
+        ...current,
+        [roomId]: sanitizedQuantity,
+      };
+    });
   };
 
   return (
@@ -46,7 +62,7 @@ export default function HotelDetailPage() {
               <h1 className="text-4xl font-semibold tracking-[-0.05em] text-slate-900">{hotel.HotelName}</h1>
               <p className="text-sm text-slate-500">Rating {hotel.Rating ?? 0}</p>
               <p className="text-base leading-7 text-slate-600">
-                {hotel.Description ?? 'This property has been migrated into the new feature-based architecture.'}
+                {hotel.Description ?? 'A thoughtfully designed stay with an experience optimized for clear comparison and fast booking.'}
               </p>
             </div>
           </Card>
@@ -110,12 +126,17 @@ export default function HotelDetailPage() {
               <p>
                 Rooms selected: <span className="font-medium text-slate-900">{totalSelectedRooms}</span>
               </p>
+              <p>
+                Rooms requested: <span className="font-medium text-slate-900">{requestedRooms}</span>
+              </p>
             </div>
+            {status ? <p className="text-sm font-medium text-rose-600">{status}</p> : null}
             <Button
               fullWidth
-              disabled={pending || totalSelectedRooms === 0}
+              disabled={pending || totalSelectedRooms === 0 || !bookingSearch.startDate || !bookingSearch.endDate}
               onClick={() => {
                 startBookingTransition(async () => {
+                  setStatus(null);
                   const selectedRooms = Object.entries(selection)
                     .filter(([, quantity]) => quantity > 0)
                     .map(([roomId, quantity]) => ({
@@ -124,7 +145,11 @@ export default function HotelDetailPage() {
                     }));
 
                   try {
-                    const bookingId = await createDraftBooking(hotel.HotelId ?? '', bookingSearch, selectedRooms);
+                    const bookingId = await createDraftBookingMutation.mutateAsync({
+                      hotelId: hotel.HotelId ?? '',
+                      booking: bookingSearch,
+                      selectedRooms,
+                    });
                     startTransition(() => {
                       navigate({
                         to: '/checkout/$bookingId',
@@ -132,12 +157,16 @@ export default function HotelDetailPage() {
                       });
                     });
                   } catch (error) {
-                    window.alert(error instanceof Error ? error.message : 'Unable to create booking');
+                    setStatus(error instanceof Error ? error.message : 'Unable to create booking');
                   }
                 });
               }}
             >
-              {pending ? 'Creating booking...' : 'Continue to checkout'}
+              {pending || createDraftBookingMutation.isPending
+                ? 'Creating booking...'
+                : !bookingSearch.startDate || !bookingSearch.endDate
+                  ? 'Choose dates to continue'
+                  : 'Continue to checkout'}
             </Button>
           </div>
         </Card>

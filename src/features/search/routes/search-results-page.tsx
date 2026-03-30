@@ -1,18 +1,18 @@
-import { startTransition, useMemo } from 'react';
-import { useLoaderData, useNavigate } from '@tanstack/react-router';
+import { useMemo } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Card } from '../../../shared/ui/card';
 import { EmptyState } from '../../../shared/ui/empty-state';
 import { Button } from '../../../shared/ui/button';
 import { formatCurrency } from '../../../shared/lib/format';
+import { getSearchResultsQuery } from '../api/search-api';
 import { SearchForm } from '../components/search-form';
-import type { BookingSearch, Hotel } from '../../../shared/types/domain';
+import { useBookingSearchQuery } from '../hooks/use-booking-search-query';
 
 export default function SearchResultsPage() {
   const navigate = useNavigate();
-  const { hotels, search } = useLoaderData({ from: '/searchresult' }) as {
-    hotels: Hotel[];
-    search: BookingSearch;
-  };
+  const { bookingSearch, pushSearch, openHotelDetail } = useBookingSearchQuery();
+  const { data: hotels } = useSuspenseQuery(getSearchResultsQuery(bookingSearch));
 
   const results = useMemo(() => hotels ?? [], [hotels]);
 
@@ -22,20 +22,15 @@ export default function SearchResultsPage() {
         <div className="mb-4 space-y-2">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Search results</p>
           <h1 className="text-3xl font-semibold tracking-[-0.04em] text-slate-900">
-            {search.city || search.country ? `Hotels in ${[search.city, search.country].filter(Boolean).join(', ')}` : 'Explore stays'}
+            {bookingSearch.city || bookingSearch.country
+              ? `Hotels in ${[bookingSearch.city, bookingSearch.country].filter(Boolean).join(', ')}`
+              : 'Explore stays'}
           </h1>
         </div>
         <SearchForm
-          initialValues={search}
+          initialValues={bookingSearch}
           submitLabel="Refresh search"
-          onSubmit={(values) => {
-            startTransition(() => {
-              navigate({
-                to: '/searchresult',
-                search: values,
-              });
-            });
-          }}
+          onSubmit={pushSearch}
         />
       </Card>
 
@@ -72,13 +67,7 @@ export default function SearchResultsPage() {
                   <p className="text-3xl font-semibold text-slate-900">{formatCurrency(hotel.LowestPrice ?? 0)}</p>
                 </div>
                 <Button
-                  onClick={() =>
-                    navigate({
-                      to: '/hotelDetail/$hotelId',
-                      params: { hotelId: hotel.HotelId ?? '' },
-                      search,
-                    })
-                  }
+                  onClick={() => openHotelDetail(hotel.HotelId ?? '')}
                 >
                   View details
                 </Button>

@@ -1,15 +1,15 @@
-import { useLoaderData, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { getManagePropertiesQuery } from '../api/manage-properties-api';
 import { Card } from '../../../shared/ui/card';
 import { EmptyState } from '../../../shared/ui/empty-state';
 import { Button } from '../../../shared/ui/button';
 import { formatCurrency } from '../../../shared/lib/format';
-import type { Hotel } from '../../../shared/types/domain';
 
 export default function ManagePropertiesPage() {
   const navigate = useNavigate();
-  const { hotels } = useLoaderData({ from: '/admin/managePage/manage-properties' }) as {
-    hotels: Hotel[];
-  };
+  const { data } = useSuspenseQuery(getManagePropertiesQuery());
+  const { hotels } = data;
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">

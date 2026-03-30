@@ -3,14 +3,15 @@ import RootShell from './root-shell';
 import { PageSkeleton } from '../shared/ui/page-skeleton';
 import { requireSession } from '../shared/routes/guards';
 import { RouterErrorBoundary, RouterNotFound } from './router-boundaries';
-import { loadHotelDetail, validateHotelDetailSearch } from '../features/hotels/api/hotels-api';
-import { loadSearchResults, validateSearchParams } from '../features/search/api/search-api';
-import { loadCheckoutPage } from '../features/bookings/api/bookings-api';
-import { loadBookingHistoryPage } from '../features/bookings/api/history-api';
-import { loadProfilePage } from '../features/profile/api/profile-api';
-import { loadDashboardPage } from '../features/admin/api/dashboard-api';
-import { loadManageBookingsPage } from '../features/admin/api/manage-bookings-api';
-import { loadManagePropertiesPage, loadPropertyDetailPage } from '../features/admin/api/manage-properties-api';
+import { getHotelDetailQuery, validateHotelDetailSearch } from '../features/hotels/api/hotels-api';
+import { getSearchResultsQuery, validateSearchParams } from '../features/search/api/search-api';
+import { getCheckoutQuery } from '../features/bookings/api/bookings-api';
+import { getBookingHistoryQuery } from '../features/bookings/api/history-api';
+import { getProfileQuery } from '../features/profile/api/profile-api';
+import { getDashboardQuery } from '../features/admin/api/dashboard-api';
+import { getManageBookingsQuery } from '../features/admin/api/manage-bookings-api';
+import { getManagePropertiesQuery, getPropertyDetailQuery } from '../features/admin/api/manage-properties-api';
+import { queryClient } from '../shared/query/query-client';
 
 const rootRoute = createRootRoute({
   component: RootShell,
@@ -62,7 +63,7 @@ const searchRoute = createRoute({
   path: '/searchresult',
   validateSearch: validateSearchParams,
   loaderDeps: ({ search }) => search,
-  loader: ({ deps }) => loadSearchResults(deps),
+  loader: ({ deps }) => queryClient.ensureQueryData(getSearchResultsQuery(deps)),
   pendingComponent: PageSkeleton,
   component: lazyRouteComponent(() => import('../features/search/routes/search-results-page')),
 });
@@ -72,7 +73,7 @@ const hotelDetailRoute = createRoute({
   path: '/hotelDetail/$hotelId',
   validateSearch: validateHotelDetailSearch,
   loaderDeps: ({ search }) => search,
-  loader: ({ params, deps }) => loadHotelDetail(params.hotelId, deps),
+  loader: ({ params, deps }) => queryClient.ensureQueryData(getHotelDetailQuery(params.hotelId, deps)),
   pendingComponent: PageSkeleton,
   component: lazyRouteComponent(() => import('../features/hotels/routes/hotel-detail-page')),
 });
@@ -80,7 +81,7 @@ const hotelDetailRoute = createRoute({
 const checkoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/checkout/$bookingId',
-  loader: ({ params }) => loadCheckoutPage(params.bookingId),
+  loader: ({ params }) => queryClient.ensureQueryData(getCheckoutQuery(params.bookingId)),
   pendingComponent: PageSkeleton,
   component: lazyRouteComponent(() => import('../features/bookings/routes/checkout-page')),
 });
@@ -95,7 +96,7 @@ const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile',
   beforeLoad: () => requireSession('user'),
-  loader: () => loadProfilePage(),
+  loader: () => queryClient.ensureQueryData(getProfileQuery()),
   pendingComponent: PageSkeleton,
   component: lazyRouteComponent(() => import('../features/profile/routes/profile-page')),
 });
@@ -104,7 +105,7 @@ const bookingHistoryRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/bookings-trips',
   beforeLoad: () => requireSession('user'),
-  loader: () => loadBookingHistoryPage(),
+  loader: () => queryClient.ensureQueryData(getBookingHistoryQuery()),
   pendingComponent: PageSkeleton,
   component: lazyRouteComponent(() => import('../features/bookings/routes/booking-history-page')),
 });
@@ -122,7 +123,7 @@ const adminDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/managePage/dashboard',
   beforeLoad: () => requireSession('manager'),
-  loader: () => loadDashboardPage(),
+  loader: () => queryClient.ensureQueryData(getDashboardQuery()),
   pendingComponent: PageSkeleton,
   component: lazyRouteComponent(() => import('../features/admin/routes/dashboard-page')),
 });
@@ -131,7 +132,7 @@ const adminBookingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/managePage/manage-booking',
   beforeLoad: () => requireSession('manager'),
-  loader: () => loadManageBookingsPage(),
+  loader: () => queryClient.ensureQueryData(getManageBookingsQuery()),
   pendingComponent: PageSkeleton,
   component: lazyRouteComponent(() => import('../features/admin/routes/manage-bookings-page')),
 });
@@ -140,7 +141,7 @@ const adminPropertiesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/managePage/manage-properties',
   beforeLoad: () => requireSession('manager'),
-  loader: () => loadManagePropertiesPage(),
+  loader: () => queryClient.ensureQueryData(getManagePropertiesQuery()),
   pendingComponent: PageSkeleton,
   component: lazyRouteComponent(() => import('../features/admin/routes/manage-properties-page')),
 });
@@ -149,7 +150,7 @@ const adminPropertyDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/managePage/manage-properties/$hotelId',
   beforeLoad: () => requireSession('manager'),
-  loader: ({ params }) => loadPropertyDetailPage(params.hotelId),
+  loader: ({ params }) => queryClient.ensureQueryData(getPropertyDetailQuery(params.hotelId)),
   pendingComponent: PageSkeleton,
   component: lazyRouteComponent(() => import('../features/admin/routes/property-detail-page')),
 });
