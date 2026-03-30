@@ -4,6 +4,8 @@ Modern hotel booking frontend built with React, TypeScript, TanStack Router, Tai
 
 - feature-based frontend architecture
 - typed routing, DTOs, and validated form flows
+- typed request/response contracts for feature APIs
+- query-driven data fetching with a shared API client
 - reusable UI primitives and layouts
 - lazy-loaded pages with loading skeletons
 - polished booking, profile, and admin experiences
@@ -18,6 +20,7 @@ The current implementation emphasizes:
 - a feature-first structure for long-term maintainability
 - typed route params, search params, DTOs, and form state
 - route-based code splitting for faster perceived navigation
+- query prefetching through route loaders plus cache-backed page rendering
 - consistent visual language powered by Tailwind CSS 4
 - reusable shared layers for UI, API access, layouts, and session state
 - a clear path for scaling into richer booking and admin workflows
@@ -28,6 +31,7 @@ This repo is meant to communicate engineering skill clearly in a hiring context:
 
 - architecture thinking through feature boundaries, shared layers, and shell composition
 - strong TypeScript fundamentals in routes, forms, DTOs, API helpers, and domain models
+- explicit request and response body contracts for feature-level API clients
 - frontend performance awareness through lazy loading and skeleton-driven loading states
 - product sense through mobile-friendly layouts, hierarchy, and clearer interaction flows
 - maintainability through small shared primitives, custom hooks, and schema-first form orchestration
@@ -40,6 +44,7 @@ This repo is meant to communicate engineering skill clearly in a hiring context:
 - TypeScript
 - Vite
 - TanStack Router
+- TanStack Query
 - React Hook Form
 - Zod
 - Tailwind CSS 4
@@ -64,11 +69,9 @@ This repo is meant to communicate engineering skill clearly in a hiring context:
 ```text
 src/
   app/        # router, providers, root shell, route boundaries, global styles
-  features/   # feature-first modules with dto/hooks/components/routes
-  shared/     # app-wide ui, api client, layouts, session, lib helpers, shared types
+  features/   # feature-first modules with dto/hooks/components/routes/api
+  shared/     # app-wide ui, api client, layouts, session, lib helpers, shared types/contracts
   types/      # ambient type declarations
-legacy/
-  cra-app/    # archived source tree kept outside the active runtime surface
 ```
 
 ### Active Feature Modules
@@ -78,9 +81,9 @@ legacy/
 - `home`
   - landing page and search entry flow
 - `search`
-  - typed search params, zod-backed search form, result listing
+  - typed search params, zod-backed search form, URL query sync hook, result listing
 - `hotels`
-  - hotel detail loader + booking draft flow
+  - hotel detail query + booking draft mutation flow
 - `bookings`
   - checkout DTOs, split summary/form cards, final state, booking history
 - `profile`
@@ -93,10 +96,17 @@ legacy/
 The app uses TanStack Router with:
 
 - route-level lazy loading
-- route loaders for page data
+- route loaders for query prefetching
 - loader dependencies for search-driven routes
 - redirect-based auth guards
 - centralized error and not-found boundaries
+
+The data layer uses a shared API-client pattern with TanStack Query:
+
+- route loaders call `queryClient.ensureQueryData(...)` for prefetching
+- page components read cached data via `useSuspenseQuery(...)`
+- feature mutations use `useMutation(...)` with targeted invalidation
+- search and filter state is normalized through a reusable URL query hook
 
 ### Router Sketch
 
@@ -141,8 +151,10 @@ The visual system is intentionally more editorial and product-focused than a def
 
 - route-based lazy loading
 - typed route params and search params
+- cache-backed data fetching with TanStack Query
 - schema-first DTO and form validation with React Hook Form + Zod
-- centralized HTTP helpers
+- feature API SDKs with explicit request and response body interfaces
+- centralized HTTP helpers and query client defaults
 - reusable session utilities
 - shared UI primitives
 - feature-based ownership
@@ -154,8 +166,11 @@ If you are reviewing this repo as a hiring signal, the strongest parts to look a
 
 - [src/app/router.tsx](src/app/router.tsx)
 - [src/app/root-shell.tsx](src/app/root-shell.tsx)
+- [src/shared/api/index.ts](src/shared/api/index.ts)
 - [src/shared/api/http.ts](src/shared/api/http.ts)
+- [src/shared/query/query-client.ts](src/shared/query/query-client.ts)
 - [src/shared/session/session.ts](src/shared/session/session.ts)
+- [src/features/search/hooks/use-booking-search-query.ts](src/features/search/hooks/use-booking-search-query.ts)
 - [src/features/search/routes/search-results-page.tsx](src/features/search/routes/search-results-page.tsx)
 - [src/features/hotels/routes/hotel-detail-page.tsx](src/features/hotels/routes/hotel-detail-page.tsx)
 - [src/features/bookings/routes/checkout-page.tsx](src/features/bookings/routes/checkout-page.tsx)
@@ -214,6 +229,11 @@ npm run typecheck
 npm run test
 ```
 
+## CI/CD
+
+- GitHub Actions runs `npm ci`, `npm run typecheck`, `npm run test-unit -- --runInBand`, and `npm run build`
+- Docker image builds now use the Vite output in `dist/` instead of the old CRA `build/` directory
+
 ## Build Status
 
 The project currently passes:
@@ -226,15 +246,15 @@ The project currently passes:
 You can derive bullets like these from this repo:
 
 - Built a hotel booking frontend with React, TypeScript, Vite, Tailwind CSS, and TanStack Router using a feature-based architecture.
-- Implemented typed route loaders, DTO-driven form schemas, guarded routes, reusable UI primitives, and shared API/session layers to support scalable frontend development.
-- Designed lazy-loaded booking and admin flows with skeleton states, extracted page hooks, and split components to improve perceived performance and maintainability.
+- Implemented typed route loaders for query prefetching, DTO-driven form schemas, guarded routes, reusable UI primitives, and shared API/session layers to support scalable frontend development.
+- Designed lazy-loaded booking and admin flows with skeleton states, TanStack Query cache orchestration, extracted page hooks, and split components to improve perceived performance and maintainability.
 - Created a portfolio-ready product demo that balances code quality, maintainability, and polished UI execution.
 
 ## Next Steps
 
 Areas intentionally left open for further iteration:
 
-- add richer mutation/cache orchestration
+- add optimistic updates and deeper admin mutation workflows
 - expand admin settings/reviews/account features beyond placeholders
 - add end-to-end and route-level integration tests for the new app surface
 

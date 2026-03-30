@@ -32,7 +32,6 @@ export function getStoredSession(): AppSession | null {
 
 export function setStoredSession(session: AppSession) {
   window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
-  window.localStorage.setItem(session.role, JSON.stringify(session.profile));
 
   if (session.role === 'manager') {
     Cookies.set('managerToken', session.token, { expires: 30 });
@@ -45,8 +44,6 @@ export function setStoredSession(session: AppSession) {
 
 export function clearStoredSession() {
   window.localStorage.removeItem(SESSION_STORAGE_KEY);
-  window.localStorage.removeItem('user');
-  window.localStorage.removeItem('manager');
   Cookies.remove('token');
   Cookies.remove('managerToken');
   emitSessionChange();

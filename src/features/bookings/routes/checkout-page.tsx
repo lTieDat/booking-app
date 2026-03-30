@@ -1,18 +1,15 @@
-import { useLoaderData, useParams } from '@tanstack/react-router';
+import { useParams } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { CheckoutGuestFormCard } from '../components/checkout-guest-form-card';
 import { CheckoutStayCard } from '../components/checkout-stay-card';
 import { CheckoutSummaryCard } from '../components/checkout-summary-card';
+import { getCheckoutQuery } from '../api/bookings-api';
 import { useCheckoutPage } from '../hooks/use-checkout-page';
-import type { Hotel, HotelRoom, PrefixOption, BookingRecord } from '../../../shared/types/domain';
 
 export default function CheckoutPage() {
   const { bookingId } = useParams({ from: '/checkout/$bookingId' });
-  const { booking, hotel, rooms, prefixes } = useLoaderData({ from: '/checkout/$bookingId' }) as {
-    booking: BookingRecord;
-    hotel: Hotel;
-    rooms: HotelRoom[];
-    prefixes: PrefixOption[];
-  };
+  const { data } = useSuspenseQuery(getCheckoutQuery(bookingId));
+  const { booking, hotel, rooms, prefixes } = data;
   const {
     form: {
       register,
@@ -21,6 +18,7 @@ export default function CheckoutPage() {
     status,
     roomSubtotal,
     finalPrice,
+    taxesAndFees,
     nights,
     selectedArrivalTime,
     submit,
@@ -36,6 +34,7 @@ export default function CheckoutPage() {
           selectedArrivalTime={selectedArrivalTime}
           roomSubtotal={roomSubtotal}
           finalPrice={finalPrice}
+          taxesAndFees={taxesAndFees}
           isSubmitting={isSubmitting}
         />
       </form>

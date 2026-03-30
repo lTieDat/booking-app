@@ -1,20 +1,9 @@
-import { startTransition } from 'react';
-import { useNavigate } from '@tanstack/react-router';
 import { Card } from '../../../shared/ui/card';
 import { SearchForm } from '../../search/components/search-form';
-import type { BookingSearch } from '../../../shared/types/domain';
+import { useBookingSearchQuery } from '../../search/hooks/use-booking-search-query';
 
 export default function HomePage() {
-  const navigate = useNavigate();
-
-  const handleSearch = (values: BookingSearch) => {
-    startTransition(() => {
-      navigate({
-        to: '/searchresult',
-        search: values,
-      });
-    });
-  };
+  const { pushSearch } = useBookingSearchQuery();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -46,7 +35,7 @@ export default function HomePage() {
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Start a search</p>
             <h2 className="text-2xl font-semibold text-slate-900">Find your next stay faster</h2>
           </div>
-          <SearchForm onSubmit={handleSearch} />
+          <SearchForm onSubmit={pushSearch} />
         </Card>
       </section>
 

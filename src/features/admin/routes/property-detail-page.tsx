@@ -1,8 +1,9 @@
-import { Link, useLoaderData } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { Link, useParams } from '@tanstack/react-router';
+import { getPropertyDetailQuery } from '../api/manage-properties-api';
 import { Card } from '../../../shared/ui/card';
 import { Button } from '../../../shared/ui/button';
 import { formatCurrency } from '../../../shared/lib/format';
-import type { Hotel, HotelStatistics } from '../../../shared/types/domain';
 
 function Metric({ label, value }: { label: string; value: string | number }) {
   return (
@@ -14,10 +15,9 @@ function Metric({ label, value }: { label: string; value: string | number }) {
 }
 
 export default function PropertyDetailPage() {
-  const { hotel, statistics } = useLoaderData({ from: '/admin/managePage/manage-properties/$hotelId' }) as {
-    hotel: Hotel;
-    statistics: HotelStatistics;
-  };
+  const { hotelId } = useParams({ from: '/admin/managePage/manage-properties/$hotelId' });
+  const { data } = useSuspenseQuery(getPropertyDetailQuery(hotelId));
+  const { hotel, statistics } = data;
 
   const customerCountries = Object.entries(statistics.customerCountByCountry ?? {}).sort((left, right) => right[1] - left[1]);
 

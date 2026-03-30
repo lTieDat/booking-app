@@ -1,6 +1,7 @@
 import { startTransition, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { loginManager, loginUser, registerUser } from '../api/auth-api';
+import { getLoginManagerMutation, getLoginUserMutation, getRegisterUserMutation } from '../api/auth-api';
 import {
   toLoginRequestDto,
   toRegisterRequestDto,
@@ -15,12 +16,13 @@ function getErrorMessage(error: unknown, fallback: string) {
 export function useGuestLoginSubmission() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const loginUserMutation = useMutation(getLoginUserMutation());
 
   const submit = async (values: LoginFormValues) => {
     setError(null);
 
     try {
-      await loginUser(toLoginRequestDto(values));
+      await loginUserMutation.mutateAsync(toLoginRequestDto(values));
       startTransition(() => {
         navigate({ to: '/' });
       });
@@ -35,12 +37,13 @@ export function useGuestLoginSubmission() {
 export function useManagerLoginSubmission() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const loginManagerMutation = useMutation(getLoginManagerMutation());
 
   const submit = async (values: LoginFormValues) => {
     setError(null);
 
     try {
-      await loginManager(toLoginRequestDto(values));
+      await loginManagerMutation.mutateAsync(toLoginRequestDto(values));
       startTransition(() => {
         navigate({ to: '/admin/managePage/dashboard' });
       });
@@ -55,12 +58,13 @@ export function useManagerLoginSubmission() {
 export function useRegisterSubmission() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const registerUserMutation = useMutation(getRegisterUserMutation());
 
   const submit = async (values: RegisterFormValues) => {
     setError(null);
 
     try {
-      await registerUser(toRegisterRequestDto(values));
+      await registerUserMutation.mutateAsync(toRegisterRequestDto(values));
       startTransition(() => {
         navigate({
           to: '/verify',

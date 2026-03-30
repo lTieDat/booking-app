@@ -3,6 +3,8 @@ name: Build & Deploy Docker React App
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   release:
     types: [published]
 
@@ -13,18 +15,22 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
-      - name: Run tests
-        run: npm run test
-        continue-on-error: true
+      - name: Run typecheck
+        run: npm run typecheck
+      - name: Run unit tests
+        run: npm run test-unit -- --runInBand
+      - name: Build application
+        run: npm run build
 
   docker:
     name: Build & Push Docker Image
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

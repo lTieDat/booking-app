@@ -1,13 +1,13 @@
-import { useLoaderData } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { getProfileQuery } from '../api/profile-api';
 import { useProfilePage } from '../hooks/use-profile-page';
 import { Button } from '../../../shared/ui/button';
 import { Card } from '../../../shared/ui/card';
 import { Field } from '../../../shared/ui/field';
 import { Input } from '../../../shared/ui/input';
-import type { UserProfile } from '../../../shared/types/domain';
 
 export default function ProfilePage() {
-  const { user } = useLoaderData({ from: '/profile' }) as { user: UserProfile };
+  const { data: user } = useSuspenseQuery(getProfileQuery());
   const {
     form: {
       register,

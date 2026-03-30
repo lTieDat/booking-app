@@ -1,14 +1,13 @@
 import { useMemo } from 'react';
-import { useLoaderData } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { getManageBookingsQuery } from '../api/manage-bookings-api';
 import { Card } from '../../../shared/ui/card';
 import { EmptyState } from '../../../shared/ui/empty-state';
 import { formatCurrency, formatDate } from '../../../shared/lib/format';
-import type { BookingRecord } from '../../../shared/types/domain';
 
 export default function ManageBookingsPage() {
-  const { bookings } = useLoaderData({ from: '/admin/managePage/manage-booking' }) as {
-    bookings: BookingRecord[];
-  };
+  const { data } = useSuspenseQuery(getManageBookingsQuery());
+  const { bookings } = data;
 
   const items = useMemo(() => bookings ?? [], [bookings]);
 

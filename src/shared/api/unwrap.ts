@@ -1,6 +1,8 @@
+import type { ApiEnvelope } from './contracts';
+
 export function unwrapData<T>(response: unknown): T {
   if (typeof response === 'object' && response && 'data' in response) {
-    return (response as { data: T }).data;
+    return (response as ApiEnvelope<T>).data as T;
   }
 
   return response as T;
