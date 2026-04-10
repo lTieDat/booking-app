@@ -35,7 +35,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - uses: mr-smithers-excellent/docker-build-push@v4
         with:
-          image: ${{ secrets.DOCKERHUB_IMAGE_USER }}
+          image: ${{ secrets.DOCKERHUB_IMAGE_USER != '' && secrets.DOCKERHUB_IMAGE_USER || format('{0}/booking-app-user-portal', secrets.DOCKERHUB_USERNAME) }}
           registry: docker.io
           dockerfile: apps/user-portal/Dockerfile
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -54,7 +54,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - uses: mr-smithers-excellent/docker-build-push@v4
         with:
-          image: ${{ secrets.DOCKERHUB_IMAGE_ADMIN }}
+          image: ${{ secrets.DOCKERHUB_IMAGE_ADMIN != '' && secrets.DOCKERHUB_IMAGE_ADMIN || format('{0}/booking-app-admin-portal', secrets.DOCKERHUB_USERNAME) }}
           registry: docker.io
           dockerfile: apps/admin-portal/Dockerfile
           username: ${{ secrets.DOCKERHUB_USERNAME }}

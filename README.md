@@ -229,8 +229,8 @@ Required Docker secrets:
 
 - `DOCKERHUB_USERNAME`
 - `DOCKERHUB_PASSWORD`
-- `DOCKERHUB_IMAGE_USER`
-- `DOCKERHUB_IMAGE_ADMIN`
+- `DOCKERHUB_IMAGE_USER` (optional, defaults to `<DOCKERHUB_USERNAME>/booking-app-user-portal`)
+- `DOCKERHUB_IMAGE_ADMIN` (optional, defaults to `<DOCKERHUB_USERNAME>/booking-app-admin-portal`)
 
 ## Adding A New App
 
