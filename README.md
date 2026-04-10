@@ -1,44 +1,21 @@
-# Booking App Frontend
+# Booking Monorepo
 
-Modern hotel booking frontend built with React, TypeScript, TanStack Router, Tailwind CSS, and Vite. This repository is designed as a portfolio-ready product demo that showcases:
+Monorepo for a modern hotel booking product split into two independent React applications:
 
-- feature-based frontend architecture
-- typed routing, DTOs, and validated form flows
-- typed request/response contracts for feature APIs
-- query-driven data fetching with a shared API client
-- reusable UI primitives and layouts
-- lazy-loaded pages with loading skeletons
-- polished booking, profile, and admin experiences
-- clean API and session boundaries for scalable growth
+- `user-portal`: customer-facing booking experience
+- `admin-portal`: manager dashboard for bookings, properties, and settings
+
+The repo uses Turborepo workspaces, shared API/session utilities, and a shared UI package so both apps can evolve independently without duplicating core infrastructure.
 
 ## Overview
 
-Booking App Frontend is a responsive travel and hospitality interface focused on the end-to-end booking journey, from discovery to checkout and trip management. The app is organized to feel like a production-ready frontend foundation rather than a collection of isolated pages.
+This repository is structured around three goals:
 
-The current implementation emphasizes:
+- keep product surfaces separate by audience
+- centralize shared contracts, API access, query state, and session logic
+- make the codebase easy to review as a portfolio-quality frontend architecture sample
 
-- a feature-first structure for long-term maintainability
-- typed route params, search params, DTOs, and form state
-- route-based code splitting for faster perceived navigation
-- query prefetching through route loaders plus cache-backed page rendering
-- consistent visual language powered by Tailwind CSS 4
-- reusable shared layers for UI, API access, layouts, and session state
-- a clear path for scaling into richer booking and admin workflows
-
-## Demo Goals
-
-This repo is meant to communicate engineering skill clearly in a hiring context:
-
-- architecture thinking through feature boundaries, shared layers, and shell composition
-- strong TypeScript fundamentals in routes, forms, DTOs, API helpers, and domain models
-- explicit request and response body contracts for feature-level API clients
-- frontend performance awareness through lazy loading and skeleton-driven loading states
-- product sense through mobile-friendly layouts, hierarchy, and clearer interaction flows
-- maintainability through small shared primitives, custom hooks, and schema-first form orchestration
-
-## Tech Stack
-
-### Core
+Both portals use:
 
 - React 18
 - TypeScript
@@ -49,215 +26,229 @@ This repo is meant to communicate engineering skill clearly in a hiring context:
 - Zod
 - Tailwind CSS 4
 
-### Supporting
-
-- `clsx` for class composition
-- `js-cookie` for cookie-backed session handling
-- `@hookform/resolvers` for schema-driven form validation
-- PostCSS for Tailwind integration
-- Jest + Testing Library for unit and component testing
-
-## Feature Overview
-
-- Public browsing flow with home search, search results, hotel detail, and checkout
-- Account flow with login, manager login, registration, verification, and password recovery
-- User surface with booking history and profile management
-- Admin surface with dashboard, booking management, property management, and property detail views
-
-## Architecture
+## Repository Structure
 
 ```text
-src/
-  app/        # router, providers, root shell, route boundaries, global styles
-  features/   # feature-first modules with dto/hooks/components/routes/api
-  shared/     # app-wide ui, api client, layouts, session, lib helpers, shared types/contracts
-  types/      # ambient type declarations
+.
+├── apps
+│   ├── admin-portal
+│   │   ├── src
+│   │   │   ├── app
+│   │   │   ├── features
+│   │   │   └── shared/layouts
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   └── vite.config.ts
+│   └── user-portal
+│       ├── src
+│       │   ├── app
+│       │   ├── features
+│       │   └── shared/layouts
+│       ├── Dockerfile
+│       ├── package.json
+│       └── vite.config.ts
+├── packages
+│   ├── shared
+│   │   └── src
+│   │       ├── api
+│   │       ├── lib
+│   │       ├── query
+│   │       ├── routes
+│   │       ├── session
+│   │       └── types
+│   ├── tsconfig
+│   └── ui
+│       └── src
+├── turbo.json
+└── package.json
 ```
 
-### Active Feature Modules
+## Apps
 
-- `auth`
-  - login, manager login, registration, verification, forgot-password scaffold
-- `home`
-  - landing page and search entry flow
-- `search`
-  - typed search params, zod-backed search form, URL query sync hook, result listing
-- `hotels`
-  - hotel detail query + booking draft mutation flow
-- `bookings`
-  - checkout DTOs, split summary/form cards, final state, booking history
-- `profile`
-  - typed profile DTO, validated profile form, update flow
-- `admin`
-  - dashboard, manage bookings, manage properties, property detail, settings placeholders
+### `apps/user-portal`
 
-## Routing Strategy
+Customer booking surface with:
 
-The app uses TanStack Router with:
+- home search and search results
+- hotel detail and checkout
+- account authentication and verification
+- booking history and profile management
 
-- route-level lazy loading
-- route loaders for query prefetching
-- loader dependencies for search-driven routes
-- redirect-based auth guards
-- centralized error and not-found boundaries
+Default local port: `3000`
 
-The data layer uses a shared API-client pattern with TanStack Query:
+### `apps/admin-portal`
 
-- route loaders call `queryClient.ensureQueryData(...)` for prefetching
-- page components read cached data via `useSuspenseQuery(...)`
-- feature mutations use `useMutation(...)` with targeted invalidation
-- search and filter state is normalized through a reusable URL query hook
+Manager surface with:
 
-### Router Sketch
+- manager sign-in
+- dashboard metrics
+- booking operations
+- property management and property detail views
+- review moderation and quality signals
+- manager account and portfolio access overview
+- workspace settings persisted per device
 
-```mermaid
-flowchart TD
-  Root["Root Shell"]
-  Public["Public Shell"]
-  Admin["Admin Shell"]
+Default local port: `3001`
 
-  Root --> Public
-  Root --> Admin
+## Packages
 
-  Public --> Home["/"]
-  Public --> Login["/login"]
-  Public --> Register["/register"]
-  Public --> Search["/searchresult"]
-  Public --> Hotel["/hotelDetail/:hotelId"]
-  Public --> Checkout["/checkout/:bookingId"]
-  Public --> Profile["/profile"]
-  Public --> History["/bookings-trips"]
+### `@booking/shared`
 
-  Admin --> Dashboard["/admin/managePage/dashboard"]
-  Admin --> Bookings["/admin/managePage/manage-booking"]
-  Admin --> Properties["/admin/managePage/manage-properties"]
-  Admin --> PropertyDetail["/admin/managePage/manage-properties/:hotelId"]
-  Admin --> Reviews["/admin/managePage/hotel-reviews"]
-  Admin --> Accounts["/admin/managePage/manage-account"]
-  Admin --> Settings["/admin/managePage/manage-settings"]
-```
+Shared business and infrastructure layer:
 
-## UI Direction
+- HTTP client and typed API SDKs
+- query client setup
+- session storage and guards
+- domain types and API contracts
+- reusable utilities such as formatters and booking query normalization
 
-The visual system is intentionally more editorial and product-focused than a default admin template:
+### `@booking/ui`
 
-- warm editorial palette instead of stock gray/purple SaaS visuals
-- glass and surface layering to create depth without overusing effects
-- strong card rhythm and rounded geometry for consistency
-- cleaner text hierarchy with fewer competing accents
-- responsive layouts that preserve readability on mobile and desktop
+Reusable presentational primitives shared across both portals:
 
-## Engineering Highlights
+- `Button`
+- `Card`
+- `Field`
+- `Input`
+- `Select`
+- `Textarea`
+- `Skeleton`
+- `PageSkeleton`
+- `EmptyState`
+- `ErrorState`
 
-- route-based lazy loading
-- typed route params and search params
-- cache-backed data fetching with TanStack Query
-- schema-first DTO and form validation with React Hook Form + Zod
-- feature API SDKs with explicit request and response body interfaces
-- centralized HTTP helpers and query client defaults
-- reusable session utilities
-- shared UI primitives
-- feature-based ownership
-- scalable shared dependency graph
+### `@booking/tsconfig`
 
-## What This Demo Emphasizes
+Shared TypeScript base configs for workspace packages and React apps.
 
-If you are reviewing this repo as a hiring signal, the strongest parts to look at are:
+## Requirements
 
-- [src/app/router.tsx](src/app/router.tsx)
-- [src/app/root-shell.tsx](src/app/root-shell.tsx)
-- [src/shared/api/index.ts](src/shared/api/index.ts)
-- [src/shared/api/http.ts](src/shared/api/http.ts)
-- [src/shared/query/query-client.ts](src/shared/query/query-client.ts)
-- [src/shared/session/session.ts](src/shared/session/session.ts)
-- [src/features/search/hooks/use-booking-search-query.ts](src/features/search/hooks/use-booking-search-query.ts)
-- [src/features/search/routes/search-results-page.tsx](src/features/search/routes/search-results-page.tsx)
-- [src/features/hotels/routes/hotel-detail-page.tsx](src/features/hotels/routes/hotel-detail-page.tsx)
-- [src/features/bookings/routes/checkout-page.tsx](src/features/bookings/routes/checkout-page.tsx)
-- [src/features/admin/routes/property-detail-page.tsx](src/features/admin/routes/property-detail-page.tsx)
+- Node.js `>= 22`
+- npm `>= 10`
 
-These files show the architectural direction of the app especially well.
+This repo is currently configured with:
 
-## Project Entry Points
+- `packageManager: npm@11.6.2`
 
-The application boots from:
+## Setup
 
-- `src/main.tsx`
-- `src/app/styles/global.css`
-- `src/app/providers.tsx`
-- `src/app/router.tsx`
-
-## Getting Started
-
-### 1. Install dependencies
+Install everything once from the repository root:
 
 ```bash
 npm install
 ```
 
-### 2. Configure environment variables
+Each app has its own `.env.example`:
 
-Copy `.env.example` to `.env` and update the API URL if needed:
+- [apps/user-portal/.env.example](/Users/datle/work/study/BookingApp/booking-app/apps/user-portal/.env.example)
+- [apps/admin-portal/.env.example](/Users/datle/work/study/BookingApp/booking-app/apps/admin-portal/.env.example)
 
-```bash
-cp .env.example .env
-```
+Example:
 
 ```env
 VITE_API_BASE_URL=http://localhost:3002/api/v1
 ```
 
-### 3. Run the app
+## Development Commands
+
+Run both apps:
 
 ```bash
 npm run dev
 ```
 
-Default local URL:
-
-```text
-http://localhost:3000
-```
-
-## Scripts
+Run only the user portal:
 
 ```bash
-npm run dev
-npm run build
-npm run preview
+npm run dev:user
+```
+
+Run only the admin portal:
+
+```bash
+npm run dev:admin
+```
+
+## Build And Test
+
+From the root:
+
+```bash
 npm run typecheck
+npm run build
 npm run test
+npx turbo run test-unit -- --runInBand
+```
+
+Run a task for a single app:
+
+```bash
+npx turbo run build --filter=user-portal
+npx turbo run build --filter=admin-portal
+npx turbo run typecheck --filter=user-portal
+```
+
+## Data Fetching Approach
+
+The apps use a shared API-client pattern instead of ad-hoc fetch calls:
+
+- `@booking/shared` owns the HTTP client and typed SDKs
+- route loaders prefetch data through `queryClient.ensureQueryData(...)`
+- screens render from `useSuspenseQuery(...)`
+- mutations use `useMutation(...)` with targeted invalidation
+- search and filter state is normalized from the URL query layer
+
+This keeps TanStack Router and TanStack Query aligned while avoiding app-specific data logic inside the shared transport layer.
+
+## Docker
+
+Each app ships with its own Dockerfile:
+
+- [apps/user-portal/Dockerfile](/Users/datle/work/study/BookingApp/booking-app/apps/user-portal/Dockerfile)
+- [apps/admin-portal/Dockerfile](/Users/datle/work/study/BookingApp/booking-app/apps/admin-portal/Dockerfile)
+
+Build a single app image from the repo root:
+
+```bash
+docker build -f apps/user-portal/Dockerfile .
+docker build -f apps/admin-portal/Dockerfile .
 ```
 
 ## CI/CD
 
-- GitHub Actions runs `npm ci`, `npm run typecheck`, `npm run test-unit -- --runInBand`, and `npm run build`
-- Docker image builds now use the Vite output in `dist/` instead of the old CRA `build/` directory
+GitHub Actions now runs the monorepo pipeline defined in [/.github/workflows/npm-publish-github-packages.yml](/Users/datle/work/study/BookingApp/booking-app/.github/workflows/npm-publish-github-packages.yml):
 
-## Build Status
+- `npm ci`
+- `npx turbo run typecheck`
+- `npx turbo run test-unit -- --runInBand`
+- `npx turbo run build`
+- Docker build and push for `user-portal`
+- Docker build and push for `admin-portal`
 
-The project currently passes:
+Required Docker secrets:
 
-- `npm run typecheck`
-- `npm run build`
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_PASSWORD`
+- `DOCKERHUB_IMAGE_USER`
+- `DOCKERHUB_IMAGE_ADMIN`
 
-## Suggested Resume Bullet Ideas
+## Adding A New App
 
-You can derive bullets like these from this repo:
+1. Create `apps/<name>/package.json`, `tsconfig.json`, `vite.config.ts`, and `src/`.
+2. Reuse shared dependencies from `@booking/shared` and UI primitives from `@booking/ui`.
+3. Add app-specific routes under `src/app/router.tsx`.
+4. Add Docker and environment files if the app needs deployment.
+5. Verify with `npx turbo run typecheck --filter=<name>` and `npx turbo run build --filter=<name>`.
 
-- Built a hotel booking frontend with React, TypeScript, Vite, Tailwind CSS, and TanStack Router using a feature-based architecture.
-- Implemented typed route loaders for query prefetching, DTO-driven form schemas, guarded routes, reusable UI primitives, and shared API/session layers to support scalable frontend development.
-- Designed lazy-loaded booking and admin flows with skeleton states, TanStack Query cache orchestration, extracted page hooks, and split components to improve perceived performance and maintainability.
-- Created a portfolio-ready product demo that balances code quality, maintainability, and polished UI execution.
+## Adding A New Package
 
-## Next Steps
+1. Create `packages/<name>/package.json` and `tsconfig.json`.
+2. Export a clean public API through `src/index.ts`.
+3. Keep package responsibilities narrow so apps stay easy to compose.
+4. Add scripts only when the package truly owns a task such as `typecheck`.
 
-Areas intentionally left open for further iteration:
+## Notes
 
-- add optimistic updates and deeper admin mutation workflows
-- expand admin settings/reviews/account features beyond placeholders
-- add end-to-end and route-level integration tests for the new app surface
-
-## License
-
-MIT
+- The old single-app root source has been retired in favor of workspace apps.
+- Manager access intentionally lives in `admin-portal`, not in `user-portal`.
+- Shared route guards redirect using plain `href` values so the package stays compatible with both route trees.
