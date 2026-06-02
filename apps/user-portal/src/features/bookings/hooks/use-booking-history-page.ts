@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { getSubmitReviewMutation } from '../api/history-api';
+import { getCancelBookingMutation, getHideReviewMutation, getSubmitReviewMutation } from '../api/history-api';
 import { useReviewForm } from './use-review-form';
 import { queryClient } from '@booking/shared';
 import type { BookingRecord, Hotel, UserProfile } from '@booking/shared';
@@ -19,6 +19,8 @@ export function useBookingHistoryPage(user: UserProfile, bookings: BookingWithHo
   const [status, setStatus] = useState<string | null>(null);
   const reviewForm = useReviewForm(activeBooking);
   const submitReviewMutation = useMutation(getSubmitReviewMutation());
+  const hideReviewMutation = useMutation(getHideReviewMutation());
+  const cancelBookingMutation = useMutation(getCancelBookingMutation());
 
   const closeReview = () => {
     setActiveBooking(null);
@@ -31,7 +33,7 @@ export function useBookingHistoryPage(user: UserProfile, bookings: BookingWithHo
   };
 
   const submit = reviewForm.handleSubmit(async (values) => {
-    if (!activeBooking?.bookingId || !activeBooking.hotelId || !activeBooking.userId) {
+    if (!activeBooking?.bookingId) {
       setStatus('Review details are incomplete for this booking.');
       return;
     }
@@ -41,8 +43,9 @@ export function useBookingHistoryPage(user: UserProfile, bookings: BookingWithHo
 
       await submitReviewMutation.mutateAsync({
         bookingId: activeBooking.bookingId,
-        hotelId: activeBooking.hotelId,
-        userId: activeBooking.userId,
+        hotelId: activeBooking.hotelId ?? '',
+        userId: activeBooking.userId ?? '',
+        reviewId: typeof activeBooking.review === 'object' ? activeBooking.review?.id : undefined,
         reviewText: values.reviewText.trim(),
         rating: values.rating,
       });
@@ -54,6 +57,34 @@ export function useBookingHistoryPage(user: UserProfile, bookings: BookingWithHo
     }
   });
 
+  const hideReview = async () => {
+    const reviewId = typeof activeBooking?.review === 'object' ? activeBooking.review?.id : undefined;
+    if (!reviewId) {
+      setStatus('This booking does not have a review to hide.');
+      return;
+    }
+    try {
+      setStatus(null);
+      await hideReviewMutation.mutateAsync(reviewId);
+      await queryClient.invalidateQueries({ queryKey: ['booking', 'history'] });
+      closeReview();
+    } catch (error) {
+      setStatus(getErrorMessage(error));
+    }
+  };
+
+  const cancelBooking = async (bookingId: string) => {
+    try {
+      await cancelBookingMutation.mutateAsync({
+        bookingId,
+        reason: 'Cancelled from user portal',
+      });
+      await queryClient.invalidateQueries({ queryKey: ['booking', 'history'] });
+    } catch (error) {
+      setStatus(getErrorMessage(error));
+    }
+  };
+
   return {
     user,
     items,
@@ -63,5 +94,7 @@ export function useBookingHistoryPage(user: UserProfile, bookings: BookingWithHo
     openReview,
     closeReview,
     submit,
+    hideReview,
+    cancelBooking,
   };
 }

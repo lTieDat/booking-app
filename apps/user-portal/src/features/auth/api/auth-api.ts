@@ -15,3 +15,11 @@ export function getRegisterUserMutation() {
 export function getVerifyEmailMutation() {
   return api.auth.verifyEmail();
 }
+
+export function getRequestPasswordResetMutation() {
+  return api.auth.requestPasswordReset();
+}
+
+export function getResetPasswordMutation() {
+  return api.auth.resetPassword();
+}

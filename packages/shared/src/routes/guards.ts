@@ -5,12 +5,12 @@ export function requireSession(role?: SessionRole) {
   const session = getStoredSession();
 
   if (!session) {
-    throw redirect({ href: role === 'manager' ? '/loginManager' : '/login' });
+    throw redirect({ href: role === 'manager' || role === 'receptionist' ? '/loginManager' : '/login' });
   }
 
   if (role && session.role !== role) {
     throw redirect({
-      href: session.role === 'manager' ? '/admin/managePage/dashboard' : '/',
+      href: session.role === 'manager' || session.role === 'receptionist' ? '/admin/managePage/dashboard' : '/',
     });
   }
 

@@ -1,9 +1,8 @@
 import { mutationOptions } from '@tanstack/react-query';
-import type { ApiEnvelope } from '../contracts';
-import { HttpClient } from '../http';
-import { unwrapData } from '../unwrap';
 import { setStoredSession, type AppSession } from '../../session/session';
-import type { ManagerProfile, UserProfile } from '../../types/domain';
+import type { SpringApiClient } from '../spring-client';
+import { syncSpringAuth } from '../spring-client';
+import { mapUserSummaryToManagerProfile, mapUserSummaryToProfile, springData } from '../mappers';
 
 // ---- Inlined from features/auth/dto/auth-form.dto ----
 export interface LoginRequestDto {
@@ -30,25 +29,21 @@ export interface VerifyEmailResponseBody {
 }
 // -------------------------------------------------------
 
-interface AuthResponseBody<TProfile> extends ApiEnvelope<TProfile & { token?: string }> {
-  token?: string;
+export interface PasswordResetRequestDto {
+  email: string;
 }
 
-function persistSessionFromResponse<TProfile extends object>(
-  role: 'user' | 'manager',
-  response: AuthResponseBody<TProfile>
-) {
-  const profile = unwrapData<TProfile & { token?: string }>(response);
-  const token = response.token ?? profile.token;
+export interface PasswordResetConfirmDto {
+  email: string;
+  token: string;
+  newPassword: string;
+}
 
-  if (!token) {
-    throw new Error('Authentication token was not returned by the server');
-  }
-
+function persistSession<TProfile extends object>(role: AppSession['role'], token: string, profile: TProfile) {
   const session: AppSession = {
     role,
     token,
-    profile,
+    profile: profile as Record<string, unknown>,
     createdAt: new Date().toISOString(),
   };
 
@@ -57,14 +52,44 @@ function persistSessionFromResponse<TProfile extends object>(
 }
 
 export class AuthApi {
-  constructor(private readonly client: HttpClient) {}
+  constructor(private readonly client: SpringApiClient) {}
 
   loginUser() {
     return mutationOptions({
       mutationKey: ['auth', 'user', 'login'],
       mutationFn: async (payload: LoginRequestDto) => {
-        const response = await this.client.post<AuthResponseBody<UserProfile>>('/users/login', payload);
-        return persistSessionFromResponse('user', response);
+        const auth = springData(
+          await this.client.api.authenticateUser({
+            usernameOrEmail: payload.email,
+            password: payload.password,
+          })
+        );
+        const token = auth.accessToken;
+        if (!token) throw new Error('Authentication token was not returned by the server');
+
+        syncSpringAuth(this.client, token);
+        const profile = mapUserSummaryToProfile(springData(await this.client.api.getCurrentUser()), token);
+        return persistSession('user', token, profile);
+      },
+    });
+  }
+
+  loginReceptionist() {
+    return mutationOptions({
+      mutationKey: ['auth', 'receptionist', 'login'],
+      mutationFn: async (payload: LoginRequestDto) => {
+        const auth = springData(
+          await this.client.api.authenticateUser({
+            usernameOrEmail: payload.email,
+            password: payload.password,
+          })
+        );
+        const token = auth.accessToken;
+        if (!token) throw new Error('Authentication token was not returned by the server');
+
+        syncSpringAuth(this.client, token);
+        const profile = mapUserSummaryToManagerProfile(springData(await this.client.api.getCurrentUser()), token);
+        return persistSession('receptionist', token, profile);
       },
     });
   }
@@ -73,8 +98,18 @@ export class AuthApi {
     return mutationOptions({
       mutationKey: ['auth', 'manager', 'login'],
       mutationFn: async (payload: LoginRequestDto) => {
-        const response = await this.client.post<AuthResponseBody<ManagerProfile>>('/admin/login', payload);
-        return persistSessionFromResponse('manager', response);
+        const auth = springData(
+          await this.client.api.authenticateManager({
+            usernameOrEmail: payload.email,
+            password: payload.password,
+          })
+        );
+        const token = auth.accessToken;
+        if (!token) throw new Error('Authentication token was not returned by the server');
+
+        syncSpringAuth(this.client, token);
+        const profile = mapUserSummaryToManagerProfile(springData(await this.client.api.getCurrentUser()), token);
+        return persistSession('manager', token, profile);
       },
     });
   }
@@ -82,16 +117,58 @@ export class AuthApi {
   register() {
     return mutationOptions({
       mutationKey: ['auth', 'register'],
-      mutationFn: (payload: RegisterRequestDto) =>
-        this.client.post<ApiEnvelope<RegisterResponseBody>>('/users/register', payload),
+      mutationFn: async (payload: RegisterRequestDto) => {
+        const username = payload.email
+          .split('@')[0]
+          .replace(/[^a-zA-Z0-9]/g, '')
+          .slice(0, 15)
+          .padEnd(3, '0');
+        const response = springData(
+          await this.client.api.registerUser({
+            name: payload.fullName,
+            username,
+            email: payload.email,
+            password: payload.password,
+          })
+        );
+        await this.client.api.requestEmailVerification({ email: payload.email });
+        return response;
+      },
     });
   }
 
   verifyEmail() {
     return mutationOptions({
       mutationKey: ['auth', 'verify-email'],
-      mutationFn: (payload: VerifyEmailRequestDto) =>
-        this.client.post<ApiEnvelope<VerifyEmailResponseBody>>('/users/verify', payload),
+      mutationFn: async (payload: VerifyEmailRequestDto) =>
+        springData(
+          await this.client.api.verifyEmail({
+            email: payload.email,
+            token: payload.otp,
+          })
+        ),
+    });
+  }
+
+  requestPasswordReset() {
+    return mutationOptions({
+      mutationKey: ['auth', 'password-reset', 'request'],
+      mutationFn: async (payload: PasswordResetRequestDto) =>
+        springData(await this.client.api.requestPasswordReset({ email: payload.email })),
+    });
+  }
+
+  resetPassword() {
+    return mutationOptions({
+      mutationKey: ['auth', 'password-reset', 'confirm'],
+      mutationFn: async (payload: PasswordResetConfirmDto) =>
+        springData(
+          await this.client.api.resetPassword({
+            email: payload.email,
+            token: payload.token,
+            newPassword: payload.newPassword,
+          })
+        ),
     });
   }
 }

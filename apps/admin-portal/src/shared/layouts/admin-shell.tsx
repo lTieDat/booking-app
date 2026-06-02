@@ -6,6 +6,7 @@ import { Button } from '@booking/ui';
 const adminLinks = [
   { label: 'Dashboard', to: '/admin/managePage/dashboard' as const },
   { label: 'Bookings', to: '/admin/managePage/manage-booking' as const },
+  { label: 'Front Desk', to: '/admin/managePage/front-desk' as const },
   { label: 'Properties', to: '/admin/managePage/manage-properties' as const },
   { label: 'Reviews', to: '/admin/managePage/hotel-reviews' as const },
   { label: 'Accounts', to: '/admin/managePage/manage-account' as const },
@@ -16,7 +17,7 @@ export function AdminShell({ children }: PropsWithChildren) {
   const session = useSession();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const isAuthenticated = session?.role === 'manager';
+  const isAuthenticated = session?.role === 'manager' || session?.role === 'receptionist';
 
   if (!isAuthenticated) {
     return (
@@ -48,7 +49,9 @@ export function AdminShell({ children }: PropsWithChildren) {
               </p>
             </div>
             <nav className="space-y-2">
-              {adminLinks.map((item) => {
+              {adminLinks
+                .filter((item) => session.role === 'manager' || item.to === '/admin/managePage/front-desk')
+                .map((item) => {
                 const isActive = pathname.startsWith(item.to);
 
                 return (

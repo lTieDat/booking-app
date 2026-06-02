@@ -1,9 +1,8 @@
 import { mutationOptions, queryOptions } from '@tanstack/react-query';
-import type { ApiEnvelope, ApiResponse } from '../contracts';
-import { HttpClient } from '../http';
-import { unwrapData } from '../unwrap';
-import { requireSession } from '../../routes/guards';
 import type { UserProfile } from '../../types/domain';
+import type { SpringApiClient } from '../spring-client';
+import { syncSpringAuth } from '../spring-client';
+import { mapUserSummaryToProfile, springData } from '../mappers';
 
 // ---- Inlined from features/profile ----
 export type ProfileUpdateDto = UserProfile;
@@ -15,19 +14,14 @@ export interface ProfileUpdateResponseBody {
 // ----------------------------------------
 
 export class ProfileApi {
-  constructor(private readonly client: HttpClient) {}
+  constructor(private readonly client: SpringApiClient) {}
 
   me() {
     return queryOptions({
       queryKey: ['profile', 'me'],
       queryFn: async ({ signal }) => {
-        const session = requireSession('user');
-        const response = await this.client.get<ApiResponse<UserProfile>>('/users/me', {
-          signal,
-          query: { tokenID: session.token },
-        });
-
-        return unwrapData<UserProfile>(response);
+        syncSpringAuth(this.client);
+        return mapUserSummaryToProfile(springData(await this.client.api.getCurrentUser({ signal })));
       },
     });
   }
@@ -36,13 +30,13 @@ export class ProfileApi {
     return mutationOptions({
       mutationKey: ['profile', 'update'],
       mutationFn: async (payload: ProfileUpdateDto) => {
-        const session = requireSession('user');
-
-        return this.client.request<ApiEnvelope<ProfileUpdateResponseBody>>('/users/updateUser', {
-          method: 'POST',
-          body: JSON.stringify(payload),
-          query: { tokenID: session.token },
-        });
+        return {
+          success: true,
+          data: {
+            message: 'Profile updates are not exposed by the Spring Boot API yet.',
+            user: payload,
+          },
+        };
       },
     });
   }

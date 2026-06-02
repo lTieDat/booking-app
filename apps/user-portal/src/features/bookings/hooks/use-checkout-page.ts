@@ -60,7 +60,7 @@ export function useCheckoutPage(
     try {
       setStatus(null);
 
-      await updateBookingMutation.mutateAsync(toUpdateBookingRequestDto(bookingId, finalPrice, values));
+      const result = await updateBookingMutation.mutateAsync(toUpdateBookingRequestDto(bookingId, finalPrice, values));
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['booking', 'checkout', bookingId] }),
         queryClient.invalidateQueries({ queryKey: ['booking', 'history'] }),
@@ -68,7 +68,7 @@ export function useCheckoutPage(
 
       navigate({
         to: '/booking/$bookingId/final',
-        params: { bookingId },
+        params: { bookingId: result.booking?.bookingId ?? bookingId },
       });
     } catch (error) {
       setStatus(getErrorMessage(error));

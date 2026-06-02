@@ -14,8 +14,8 @@ export const bookingSearchSchema = z
     adults: z.number().int().min(1, 'At least one adult is required'),
     children: z.number().int().min(0, 'Children cannot be negative'),
     rooms: z.number().int().min(1, 'Select at least one room'),
-    lat: z.string(),
-    lng: z.string(),
+    lat: z.string().trim().min(1, 'Select a destination suggestion'),
+    lng: z.string().trim().min(1, 'Select a destination suggestion'),
     propertyName: z.string(),
     roomTags: z.string(),
   })

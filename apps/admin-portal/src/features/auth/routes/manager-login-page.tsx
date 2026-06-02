@@ -4,11 +4,11 @@ import { AuthShell } from '../components/auth-shell';
 import { Button, Field, Input } from '@booking/ui';
 
 export default function ManagerLoginPage() {
-  const { error, submit } = useManagerLoginSubmission();
+  const { error, submit, isSubmitting } = useManagerLoginSubmission();
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useLoginForm();
 
   return (
@@ -24,7 +24,7 @@ export default function ManagerLoginPage() {
     >
       <form
         className="space-y-5"
-        onSubmit={handleSubmit(submit)}
+        onSubmit={handleSubmit((values) => submit(values, 'manager'))}
       >
         <div className="space-y-1">
           <h2 className="text-2xl font-semibold text-slate-900">Manager access</h2>
@@ -43,6 +43,15 @@ export default function ManagerLoginPage() {
 
         <Button type="submit" fullWidth disabled={isSubmitting}>
           {isSubmitting ? 'Signing in...' : 'Open dashboard'}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          fullWidth
+          disabled={isSubmitting}
+          onClick={handleSubmit((values) => submit(values, 'receptionist'))}
+        >
+          Open front desk
         </Button>
       </form>
     </AuthShell>

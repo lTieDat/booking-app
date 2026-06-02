@@ -71,6 +71,12 @@ export function CheckoutGuestFormCard({
         <Field label="Phone number" error={errors.phoneNo?.message}>
           <Input placeholder="123456789" {...register('phoneNo')} />
         </Field>
+        <Field label="Passport or ID number" error={errors.identifyCardNo?.message}>
+          <Input placeholder="A1234567" {...register('identifyCardNo')} />
+        </Field>
+        <Field label="Discount code" error={errors.discountCode?.message}>
+          <Input placeholder="Optional" {...register('discountCode')} />
+        </Field>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">

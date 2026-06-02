@@ -4,7 +4,7 @@ import { PageSkeleton } from '@booking/ui';
 import { queryClient, requireSession } from '@booking/shared';
 import { RouterErrorBoundary, RouterNotFound } from './router-boundaries';
 import { getDashboardQuery } from '../features/admin/api/dashboard-api';
-import { getManageBookingsQuery } from '../features/admin/api/manage-bookings-api';
+import { getFrontDeskQuery, getManageBookingsQuery } from '../features/admin/api/manage-bookings-api';
 import { getManagePropertiesQuery, getPropertyDetailQuery } from '../features/admin/api/manage-properties-api';
 import { readStoredAdminSettings } from '../features/admin/lib/admin-settings-storage';
 
@@ -45,6 +45,15 @@ const adminBookingsRoute = createRoute({
   loader: () => queryClient.ensureQueryData(getManageBookingsQuery()),
   pendingComponent: PageSkeleton,
   component: lazyRouteComponent(() => import('../features/admin/routes/manage-bookings-page')),
+});
+
+const adminFrontDeskRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/managePage/front-desk',
+  beforeLoad: () => requireSession(),
+  loader: () => queryClient.ensureQueryData(getFrontDeskQuery()),
+  pendingComponent: PageSkeleton,
+  component: lazyRouteComponent(() => import('../features/admin/routes/front-desk-page')),
 });
 
 const adminPropertiesRoute = createRoute({
@@ -105,6 +114,7 @@ const routeTree = rootRoute.addChildren([
   adminIndexRoute,
   adminDashboardRoute,
   adminBookingsRoute,
+  adminFrontDeskRoute,
   adminPropertiesRoute,
   adminPropertyDetailRoute,
   adminReviewsRoute,

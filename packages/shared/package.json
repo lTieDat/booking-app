@@ -11,7 +11,8 @@
     "./query": "./src/query/index.ts",
     "./types": "./src/types/index.ts",
     "./lib": "./src/lib/index.ts",
-    "./routes": "./src/routes/index.ts"
+    "./routes": "./src/routes/index.ts",
+    "./api/generated": "./src/api/generated/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

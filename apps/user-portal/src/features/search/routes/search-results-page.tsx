@@ -56,7 +56,11 @@ export default function SearchResultsPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h2 className="text-2xl font-semibold text-slate-900">{hotel.HotelName}</h2>
-                    <p className="text-sm text-slate-500">Rating {hotel.Rating ?? 0} • {hotel.NumberOfRooms ?? 0} rooms left</p>
+                    <p className="text-sm text-slate-500">
+                      Rating {hotel.Rating ?? 0}
+                      {hotel.reviewCount ? ` • ${hotel.reviewCount} reviews` : ''}
+                      {hotel.distanceKm ? ` • ${hotel.distanceKm.toFixed(1)} km away` : ''}
+                    </p>
                   </div>
                 </div>
                 <p className="text-sm leading-7 text-slate-600">{hotel.Description ?? 'A comfortable stay with a booking flow designed for quick comparison and smooth checkout.'}</p>

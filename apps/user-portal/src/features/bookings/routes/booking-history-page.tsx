@@ -21,6 +21,8 @@ export default function BookingHistoryPage() {
     openReview,
     closeReview,
     submit,
+    hideReview,
+    cancelBooking,
   } = useBookingHistoryPage(user, bookings);
 
   if (!items.length) {
@@ -67,6 +69,11 @@ export default function BookingHistoryPage() {
                   <Button variant="secondary" onClick={() => openReview(booking)}>
                     {booking.review === 'no reviews' ? 'Add review' : 'See review'}
                   </Button>
+                  {['PENDING', 'CONFIRMED'].includes((booking.status ?? '').toUpperCase()) ? (
+                    <Button variant="danger" onClick={() => booking.bookingId && cancelBooking(booking.bookingId)}>
+                      Cancel
+                    </Button>
+                  ) : null}
                 </div>
               </div>
               <div className="flex flex-col justify-between gap-3 md:items-end">
@@ -90,6 +97,7 @@ export default function BookingHistoryPage() {
           isSubmitting={isSubmitting}
           onClose={closeReview}
           onSubmit={submit}
+          onHide={hideReview}
         />
       ) : null}
     </div>

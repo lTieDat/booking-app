@@ -16,6 +16,7 @@ interface ReviewDialogProps {
   isSubmitting: boolean;
   onClose: () => void;
   onSubmit: ReturnType<UseFormHandleSubmit<ReviewFormValues>>;
+  onHide?: () => void;
 }
 
 export function ReviewDialog({
@@ -27,6 +28,7 @@ export function ReviewDialog({
   isSubmitting,
   onClose,
   onSubmit,
+  onHide,
 }: ReviewDialogProps) {
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/50 px-4">
@@ -41,31 +43,36 @@ export function ReviewDialog({
           </Button>
         </div>
 
-        {existingReview ? (
-          <div className="mt-6 space-y-3">
-            <p className="text-sm text-slate-500">Rating: {existingReview.rating}</p>
-            <p className="text-sm leading-6 text-slate-600">{existingReview.reviewText}</p>
-          </div>
-        ) : (
-          <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-            <Field label="Rating" error={errors.rating?.message}>
-              <Select {...register('rating', { valueAsNumber: true })}>
-                {[5, 4, 3, 2, 1].map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Review" error={errors.reviewText?.message} hint="Share enough detail to help future guests.">
-              <Textarea {...register('reviewText')} />
-            </Field>
-            {status ? <p className="text-sm font-medium text-slate-700">{status}</p> : null}
+        <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+          {existingReview ? (
+            <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+              Current rating: {existingReview.rating}. Update the fields below to edit this review.
+            </div>
+          ) : null}
+          <Field label="Rating" error={errors.rating?.message}>
+            <Select {...register('rating', { valueAsNumber: true })}>
+              {[5, 4, 3, 2, 1].map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Review" error={errors.reviewText?.message} hint="Share enough detail to help future guests.">
+            <Textarea {...register('reviewText')} />
+          </Field>
+          {status ? <p className="text-sm font-medium text-slate-700">{status}</p> : null}
+          <div className="flex flex-wrap gap-3">
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Submitting review...' : 'Submit review'}
+              {isSubmitting ? 'Saving review...' : existingReview ? 'Update review' : 'Submit review'}
             </Button>
-          </form>
-        )}
+            {existingReview && onHide ? (
+              <Button type="button" variant="danger" onClick={onHide}>
+                Hide review
+              </Button>
+            ) : null}
+          </div>
+        </form>
       </Card>
     </div>
   );

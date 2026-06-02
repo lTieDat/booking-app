@@ -21,3 +21,11 @@ export function getBookingHistoryQuery() {
 export function getSubmitReviewMutation() {
   return api.booking.submitReview();
 }
+
+export function getHideReviewMutation() {
+  return api.booking.hideReview();
+}
+
+export function getCancelBookingMutation() {
+  return api.booking.cancel();
+}

@@ -1,8 +1,8 @@
 import { mutationOptions, queryOptions } from '@tanstack/react-query';
-import type { ApiEnvelope, ApiResponse } from '../contracts';
-import { HttpClient } from '../http';
-import { unwrapData } from '../unwrap';
 import type { BookingSearch, Hotel } from '../../types/domain';
+import type { SpringApiClient } from '../spring-client';
+import { syncSpringAuth } from '../spring-client';
+import { mapHotelResponseToHotel, mapRoomTypeToHotelRoom, springData } from '../mappers';
 
 // ---- Inlined from features/hotels/api/hotels-api ----
 export interface SelectedRoomRequestBody {
@@ -22,21 +22,46 @@ export interface CreateDraftBookingResponseBody {
 }
 // ------------------------------------------------------
 
-export class HotelApi {
-  private readonly BASE_PATH = '/hotel';
+const CHECKOUT_DRAFT_KEY = 'booking.checkoutDraft.v1.';
 
-  constructor(private readonly client: HttpClient) {}
+export interface CheckoutDraft {
+  id: string;
+  hotelId: string;
+  booking: BookingSearch;
+  selectedRooms: SelectedRoomRequestBody[];
+  createdAt: string;
+}
+
+export function readCheckoutDraft(id: string): CheckoutDraft | null {
+  if (typeof window === 'undefined') return null;
+  const raw = window.sessionStorage.getItem(`${CHECKOUT_DRAFT_KEY}${id}`);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as CheckoutDraft;
+  } catch {
+    window.sessionStorage.removeItem(`${CHECKOUT_DRAFT_KEY}${id}`);
+    return null;
+  }
+}
+
+export function writeCheckoutDraft(draft: CheckoutDraft) {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.setItem(`${CHECKOUT_DRAFT_KEY}${draft.id}`, JSON.stringify(draft));
+}
+
+export class HotelApi {
+  constructor(private readonly client: SpringApiClient) {}
 
   detail(hotelId: string, search: BookingSearch) {
     return queryOptions({
       queryKey: ['hotel', 'detail', hotelId, search],
       queryFn: async ({ signal }) => {
-        const response = await this.client.get<ApiResponse<Hotel>>(`${this.BASE_PATH}/${hotelId}`, {
-          query: { ...search },
-          signal,
-        });
-
-        return unwrapData<Hotel>(response);
+        const [hotelResponse, roomTypesResponse] = await Promise.all([
+          this.client.api.getHotel(hotelId, { signal }),
+          this.client.api.getRoomTypes(hotelId, { signal }),
+        ]);
+        const rooms = springData(roomTypesResponse).map(mapRoomTypeToHotelRoom);
+        return mapHotelResponseToHotel(springData(hotelResponse), rooms);
       },
     });
   }
@@ -45,21 +70,16 @@ export class HotelApi {
     return mutationOptions({
       mutationKey: ['booking', 'draft', 'create'],
       mutationFn: async (payload: CreateDraftBookingRequestBody) => {
-        const response = await this.client.post<ApiEnvelope<string | CreateDraftBookingResponseBody>>(
-          '/booking/create',
-          payload
-        );
-        const data = unwrapData<string | CreateDraftBookingResponseBody>(response);
-
-        if (typeof data === 'string') {
-          return data;
-        }
-
-        if (data.bookingId) {
-          return data.bookingId;
-        }
-
-        throw new Error('Booking id was not returned by the server');
+        syncSpringAuth(this.client);
+        const id = crypto.randomUUID();
+        writeCheckoutDraft({
+          id,
+          hotelId: payload.hotelId,
+          booking: payload.booking,
+          selectedRooms: payload.selectedRooms,
+          createdAt: new Date().toISOString(),
+        });
+        return id;
       },
     });
   }

@@ -1,19 +1,22 @@
 # Booking Monorepo
 
-Monorepo for a modern hotel booking product split into two independent React applications:
+Frontend monorepo for a hotel booking product backed by the sibling `BookingAPI` Spring Boot REST API.
+The frontend is split into two independent React applications:
 
 - `user-portal`: customer-facing booking experience
 - `admin-portal`: manager dashboard for bookings, properties, and settings
 
-The repo uses Turborepo workspaces, shared API/session utilities, and a shared UI package so both apps can evolve independently without duplicating core infrastructure.
+The repo uses Turborepo workspaces, shared API/session utilities, generated OpenAPI types, and a shared UI package so both apps can evolve independently without duplicating core infrastructure.
 
 ## Overview
 
-This repository is structured around three goals:
+The full local system is now:
 
-- keep product surfaces separate by audience
-- centralize shared contracts, API access, query state, and session logic
-- make the codebase easy to review as a portfolio-quality frontend architecture sample
+- `booking-app`: this frontend monorepo
+- `BookingAPI`: sibling backend repo implemented as a Spring Boot REST API
+- Spring Boot exposes OpenAPI at `/v3/api-docs`; FE generated types live in `packages/shared/src/api/generated`
+- Spring Boot handles auth, location-based hotel search, manager statistics, bookings, payOS payment links, invoices, refunds, receptionist assignments, hotel/room CRUD, taxes, discounts, cancellation policies, and reviews
+- The user portal calls Google Places suggestions, stores the selected latitude/longitude in search params, then sends them to `POST /api/hotels/search`
 
 Both portals use:
 
@@ -25,6 +28,41 @@ Both portals use:
 - React Hook Form
 - Zod
 - Tailwind CSS 4
+
+## Architecture
+
+```mermaid
+flowchart LR
+  User["User Portal\nReact + Vite"] --> Shared["booking/shared\nSDK, session, query"]
+  Admin["Admin Portal\nReact + Vite"] --> Shared
+  User --> Google["Google Places API\nlocation suggestions"]
+  Shared --> Generated["Generated OpenAPI Client\nbooking-api.ts"]
+  Generated --> BE["BookingAPI\nSpring Boot REST API"]
+  BE --> DB["Relational Database\nFlyway migrations"]
+  BE --> ObjectStorage["Object Storage\nhotel preview images"]
+  BE --> PayOS["payOS\npayment links + webhooks"]
+```
+
+```mermaid
+sequenceDiagram
+  participant Guest as Guest
+  participant FE as User Portal
+  participant API as Spring Boot REST API
+  participant PayOS as payOS
+  participant Desk as Receptionist/Admin
+
+  Guest->>FE: Select hotel room types
+  FE->>FE: Store checkout draft locally
+  Guest->>FE: Submit guest details
+  FE->>API: POST /api/bookings with Idempotency-Key
+  API-->>FE: Booking PENDING + inventory hold
+  FE->>API: POST /api/bookings/{id}/payments/payos
+  API-->>FE: Payment checkout URL / QR
+  PayOS->>API: POST /api/payments/payos/webhook
+  API-->>API: Confirm booking, consume inventory, issue invoice
+  Desk->>API: PATCH check-in / check-out / no-show
+  Admin->>API: Manual refund when needed
+```
 
 ## Repository Structure
 
@@ -70,9 +108,11 @@ Both portals use:
 Customer booking surface with:
 
 - home search and search results
+- Google Places destination suggestions with latitude/longitude hotel search
 - hotel detail and checkout
 - account authentication and verification
-- booking history and profile management
+- forgot-password OTP reset
+- booking history, cancellation, reviews, payment links, and invoice display
 
 Default local port: `3000`
 
@@ -81,10 +121,12 @@ Default local port: `3000`
 Manager surface with:
 
 - manager sign-in
-- dashboard metrics
+- dashboard metrics from `/api/hotels/manager/stats`
 - booking operations
-- property management and property detail views
-- review moderation and quality signals
+- front-desk check-in, check-out, and no-show queues
+- property management, hotel CRUD, room type/room/amenity management, and preview image upload
+- review moderation through Spring Boot review endpoints
+- discount, cancellation policy, tax config, receptionist assignment, invoice/payment/refund workflows
 - manager account and portfolio access overview
 - workspace settings persisted per device
 
@@ -96,7 +138,7 @@ Default local port: `3001`
 
 Shared business and infrastructure layer:
 
-- HTTP client and typed API SDKs
+- Spring Boot OpenAPI client wrapper and typed SDKs
 - query client setup
 - session storage and guards
 - domain types and API contracts
@@ -146,8 +188,11 @@ Each app has its own `.env.example`:
 Example:
 
 ```env
-VITE_API_BASE_URL=http://localhost:3002/api/v1
+VITE_API_BASE_URL=http://localhost:8080
+VITE_GOOGLE_MAPS_API_KEY=<google-maps-browser-key>
 ```
+
+`VITE_API_BASE_URL` points to the Spring Boot `BookingAPI` REST API. `VITE_GOOGLE_MAPS_API_KEY` is used by the user portal for destination suggestions before sending latitude and longitude to the hotel search endpoint.
 
 ## Development Commands
 
@@ -169,15 +214,13 @@ Run only the admin portal:
 npm run dev:admin
 ```
 
-## Build And Test
+## Build And Typecheck
 
 From the root:
 
 ```bash
 npm run typecheck
 npm run build
-npm run test
-npx turbo run test-unit -- --runInBand
 ```
 
 Run a task for a single app:
@@ -192,13 +235,21 @@ npx turbo run typecheck --filter=user-portal
 
 The apps use a shared API-client pattern instead of ad-hoc fetch calls:
 
-- `@booking/shared` owns the HTTP client and typed SDKs
+- `@booking/shared` owns Spring Boot SDK wrappers and typed API mappers
+- `packages/shared/src/api/generated/booking-api.ts` is generated from `BookingAPI` OpenAPI `/v3/api-docs`
 - route loaders prefetch data through `queryClient.ensureQueryData(...)`
 - screens render from `useSuspenseQuery(...)`
 - mutations use `useMutation(...)` with targeted invalidation
 - search and filter state is normalized from the URL query layer
+- hotel search posts latitude, longitude, dates, guest counts, room count, and keyword to `POST /api/hotels/search`
 
 This keeps TanStack Router and TanStack Query aligned while avoiding app-specific data logic inside the shared transport layer.
+
+Regenerate the OpenAPI client when `BookingAPI` changes:
+
+```bash
+npm run generate:dto
+```
 
 ## Docker
 

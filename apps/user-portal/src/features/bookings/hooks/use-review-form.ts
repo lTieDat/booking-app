@@ -11,6 +11,13 @@ export function useReviewForm(activeBooking: BookingRecord | null) {
   });
 
   useEffect(() => {
+    if (activeBooking?.review && typeof activeBooking.review === 'object') {
+      form.reset({
+        rating: activeBooking.review.rating ?? 5,
+        reviewText: activeBooking.review.reviewText ?? activeBooking.review.comment ?? '',
+      });
+      return;
+    }
     form.reset(createReviewFormDefaults());
   }, [activeBooking, form]);
 

@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 
-export type SessionRole = 'user' | 'manager';
+export type SessionRole = 'user' | 'manager' | 'receptionist';
 
 export interface AppSession {
   role: SessionRole;

@@ -26,6 +26,13 @@ export const checkoutFormSchema = z.object({
     .trim()
     .min(6, 'Phone number is required')
     .regex(/^[0-9]+$/, 'Phone number should contain digits only'),
+  identifyCardNo: z
+    .string()
+    .trim()
+    .min(6, 'Identity number is required')
+    .max(20, 'Keep identity number under 20 characters')
+    .regex(/^[A-Za-z0-9]+$/, 'Use letters and numbers only'),
+  discountCode: z.string().trim().max(20, 'Keep discount codes under 20 characters').optional(),
   arrivalTime: z.enum(arrivalTimeOptions, {
     error: 'Arrival time is required',
   }),
@@ -49,6 +56,8 @@ export interface UpdateBookingRequestDto {
   rentalCar: boolean;
   taxiShuttle: boolean;
   specialRequest: string;
+  identifyCardNo: string;
+  discountCode?: string;
 }
 
 export function createCheckoutFormDefaults(defaultPhonePrefix = '+84'): CheckoutFormValues {
@@ -58,6 +67,8 @@ export function createCheckoutFormDefaults(defaultPhonePrefix = '+84'): Checkout
     country: '',
     phonePrefix: defaultPhonePrefix,
     phoneNo: '',
+    identifyCardNo: '',
+    discountCode: '',
     arrivalTime: "I don't know yet",
     airportShuttle: false,
     rentalCar: false,
@@ -77,6 +88,8 @@ export function toUpdateBookingRequestDto(
     customerEmail: values.customerEmail,
     phoneNo: `${values.phonePrefix}${values.phoneNo}`,
     country: values.country,
+    identifyCardNo: values.identifyCardNo,
+    discountCode: values.discountCode,
     finalPrice: Number(finalPrice.toFixed(2)),
     arrivalTime: values.arrivalTime,
     airportShuttle: values.airportShuttle,

@@ -1,10 +1,11 @@
-import { HttpClient } from './http';
 import { AdminApi } from './sdk/admin.api';
 import { AuthApi } from './sdk/auth.api';
 import { BookingApi } from './sdk/booking.api';
 import { HotelApi } from './sdk/hotel.api';
 import { ProfileApi } from './sdk/profile.api';
 import { SearchApi } from './sdk/search.api';
+import { createSpringApiClient } from './spring-client';
+import type { SpringApiClient } from './spring-client';
 
 export class Api {
   auth: AuthApi;
@@ -14,14 +15,14 @@ export class Api {
   profile: ProfileApi;
   admin: AdminApi;
 
-  constructor(client: HttpClient) {
-    this.auth = new AuthApi(client);
-    this.search = new SearchApi(client);
-    this.hotel = new HotelApi(client);
-    this.booking = new BookingApi(client);
-    this.profile = new ProfileApi(client);
-    this.admin = new AdminApi(client);
+  constructor(springClient: SpringApiClient) {
+    this.auth = new AuthApi(springClient);
+    this.search = new SearchApi(springClient);
+    this.hotel = new HotelApi(springClient);
+    this.booking = new BookingApi(springClient);
+    this.profile = new ProfileApi(springClient);
+    this.admin = new AdminApi(springClient);
   }
 }
 
-export const api = new Api(new HttpClient());
+export const api = new Api(createSpringApiClient());

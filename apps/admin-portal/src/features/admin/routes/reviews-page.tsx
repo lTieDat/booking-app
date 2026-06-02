@@ -3,7 +3,7 @@ import { formatDate } from '@booking/shared';
 import { useAdminReviewsPage } from '../hooks/use-admin-reviews-page';
 
 export default function ReviewsPage() {
-  const { items, filter, setFilter, searchTerm, setSearchTerm, stats } = useAdminReviewsPage();
+  const { items, filter, setFilter, searchTerm, setSearchTerm, stats, status, hide } = useAdminReviewsPage();
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
@@ -14,6 +14,7 @@ export default function ReviewsPage() {
           Monitor reviewed stays, surface low-rating feedback quickly, and keep an eye on completed bookings that still
           need follow-up from guests.
         </p>
+        {status ? <p className="mt-4 text-sm font-medium text-teal-200">{status}</p> : null}
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -72,7 +73,7 @@ export default function ReviewsPage() {
         <div className="grid gap-4">
           {items.map((item) => (
             <Card
-              key={item.bookingId ?? item._id}
+              key={item.bookingId ?? item.id}
               className="rounded-[28px] border-white/10 bg-white/5 p-5 text-white shadow-none"
             >
               <div className="grid gap-4 lg:grid-cols-[1fr_auto]">
@@ -89,10 +90,10 @@ export default function ReviewsPage() {
                     ) : null}
                   </div>
                   <p className="text-sm text-slate-300">
-                    {item.customerName ?? 'Guest'} • {item.customerEmail ?? 'No guest email'}
+                    {item.customerName ?? 'Guest'} • Review id {item.id ?? 'N/A'}
                   </p>
                   <p className="text-sm leading-6 text-slate-400">
-                    Stay window: {formatDate(item.checkInDate)} to {formatDate(item.checkOutDate)}
+                    Submitted: {formatDate(item.createdAt)}
                   </p>
                   {item.hasReview ? (
                     <div className="rounded-[24px] bg-slate-950/40 p-4">
@@ -109,7 +110,12 @@ export default function ReviewsPage() {
                 </div>
                 <div className="flex flex-col gap-2 lg:items-end">
                   <span className="text-sm text-slate-400">Booking</span>
-                  <span className="font-mono text-sm text-slate-200">{item.bookingId ?? item._id ?? 'N/A'}</span>
+                  <span className="font-mono text-sm text-slate-200">{item.bookingId ?? item.id ?? 'N/A'}</span>
+                  {item.id ? (
+                    <Button variant="danger" onClick={() => hide(item.id)}>
+                      Hide review
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             </Card>

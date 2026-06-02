@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3002/api/v1';
+export const SPRING_API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+export const LEGACY_SEARCH_API_BASE_URL =
+  import.meta.env.VITE_SEARCH_API_BASE_URL ?? import.meta.env.VITE_LEGACY_API_BASE_URL ?? 'http://localhost:3002/api/v1';
 
 export class ApiError extends Error {
   status: number;
@@ -17,8 +19,8 @@ export type QueryParams = Record<
   string | number | boolean | null | undefined | Array<string | number | boolean>
 >;
 
-export function createUrl(path: string, query?: QueryParams) {
-  const url = new URL(`${API_BASE_URL}${path}`);
+export function createUrl(path: string, query?: QueryParams, baseUrl = SPRING_API_BASE_URL) {
+  const url = new URL(`${baseUrl}${path}`);
 
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
@@ -62,8 +64,13 @@ async function parseResponse<T>(response: Response): Promise<T> {
   return (payload ?? null) as T;
 }
 
-export async function requestJson<T>(path: string, init?: RequestInit, query?: QueryParams) {
-  const response = await fetch(createUrl(path, query), {
+export async function requestJson<T>(
+  path: string,
+  init?: RequestInit,
+  query?: QueryParams,
+  baseUrl = SPRING_API_BASE_URL
+) {
+  const response = await fetch(createUrl(path, query, baseUrl), {
     ...init,
     headers: {
       Accept: 'application/json',
@@ -92,9 +99,12 @@ interface ClientRequestOptions {
   headers?: HeadersInit;
   body?: string | FormData;
   method?: string;
+  baseUrl?: string;
 }
 
 export class HttpClient {
+  constructor(private readonly baseUrl = SPRING_API_BASE_URL) {}
+
   request<T>(path: string, options?: ClientRequestOptions) {
     return requestJson<T>(
       path,
@@ -104,7 +114,8 @@ export class HttpClient {
         headers: options?.headers,
         body: options?.body,
       },
-      options?.query
+      options?.query,
+      options?.baseUrl ?? this.baseUrl
     );
   }
 

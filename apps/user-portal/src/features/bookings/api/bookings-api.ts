@@ -15,6 +15,10 @@ export function getCheckoutQuery(bookingId: string) {
   return api.booking.checkout(bookingId);
 }
 
+export function getBookingFinalQuery(bookingId: string) {
+  return api.booking.final(bookingId);
+}
+
 export function getUpdateBookingMutation(bookingId: string) {
   return api.booking.update(bookingId);
 }

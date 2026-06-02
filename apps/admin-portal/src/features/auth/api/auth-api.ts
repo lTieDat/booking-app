@@ -8,6 +8,10 @@ export function getLoginManagerMutation() {
   return api.auth.loginManager();
 }
 
+export function getLoginReceptionistMutation() {
+  return api.auth.loginReceptionist();
+}
+
 export function getRegisterUserMutation() {
   return api.auth.register();
 }
